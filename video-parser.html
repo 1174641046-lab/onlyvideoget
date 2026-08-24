@@ -2,13 +2,15 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230A6CFF' d='M12 16l-5-5h3V4h4v7h3l-5 5zm-7 4v-2h14v2H5z'/></svg>" type="image/svg+xml">
 <title>视频解析工具 - Video Parser</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="theme-color" content="#0A6CFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="视频解析">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
 /* ============================================================
@@ -17,7 +19,10 @@
    Secondary : Blue   #0A6CFF
    Accent    : Yellow #F5C518
    ============================================================ */
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* App 模式：禁止双指/双击缩放，防止误触放大 */
+html,body{touch-action:manipulation;-webkit-touch-callout:none;overscroll-behavior:none}
+input,textarea,select,button{-webkit-user-select:text;user-select:text}
 :root{
   --primary:#29A366;--primary-hover:#1E7A4A;
   --blue:#0A6CFF;--blue-deep:#0954B8;--blue-tint:#EAF2FF;
@@ -32,7 +37,7 @@
   --shadow-md:0 8px 24px rgba(20,40,30,.10);
   --shadow-lg:0 16px 40px rgba(20,40,30,.14);
   --max-width:1120px}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased;padding-bottom:56px}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased;padding-bottom:calc(56px + env(safe-area-inset-bottom))}
 a{color:var(--blue);text-decoration:none}
 a:hover{text-decoration:underline}
 
@@ -98,7 +103,7 @@ textarea#links::placeholder{color:#B9BCC1}
 .segment button.active{background:#fff;color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.10)}
 .tool-label{font-size:13px;color:var(--text-muted);font-weight:600;white-space:nowrap}
 /* Floating Action Button (circular green with white border) */
-.batch-download-btn{position:fixed;right:22px;bottom:82px;z-index:900;width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;border:3px solid #fff;display:none;align-items:center;justify-content:center;gap:1px;flex-direction:column;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(41,163,102,.40);font-family:inherit;padding:0}
+.batch-download-btn{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:900;width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;border:3px solid #fff;display:none;align-items:center;justify-content:center;gap:1px;flex-direction:column;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(41,163,102,.40);font-family:inherit;padding:0}
 .batch-download-btn:hover{background:var(--green-deep);transform:translateY(-2px) scale(1.05)}
 .batch-download-btn.active{display:flex}
 .batch-download-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
@@ -106,7 +111,7 @@ textarea#links::placeholder{color:#B9BCC1}
 .batch-download-btn .fab-text{font-size:10px;font-weight:700}
 
 /* Bottom navigation bar */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:.5px solid var(--hair);display:flex;z-index:850;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:.5px solid var(--hair);display:flex;z-index:850;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom);height:calc(56px + env(safe-area-inset-bottom))}
 .bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--text-muted);font-size:11px;font-weight:600;transition:color .2s;border:none;background:transparent;font-family:inherit}
 .bottom-nav-item.active{color:var(--green)}
 .bottom-nav-item svg{width:22px;height:22px}

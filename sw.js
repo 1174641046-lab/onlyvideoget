@@ -1,5 +1,5 @@
 /* VideoParser PWA Service Worker — cache app shell, pass through API calls */
-const CACHE = 'videoparser-v3';
+const CACHE = 'videoparser-v4';
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
