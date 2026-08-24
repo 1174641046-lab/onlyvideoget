@@ -32,7 +32,7 @@
   --shadow-md:0 8px 24px rgba(20,40,30,.10);
   --shadow-lg:0 16px 40px rgba(20,40,30,.14);
   --max-width:1120px}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased;padding-bottom:56px}
 a{color:var(--blue);text-decoration:none}
 a:hover{text-decoration:underline}
 
@@ -89,8 +89,7 @@ textarea#links::placeholder{color:#B9BCC1}
 
 /* Results */
 .results-section{margin-top:30px}
-#resultsList{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-#resultsList.single-col{grid-template-columns:1fr}
+#resultsList{display:grid;grid-template-columns:1fr;gap:16px}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:12px}
 .results-header h2{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .results-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -98,10 +97,46 @@ textarea#links::placeholder{color:#B9BCC1}
 .segment button{border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-secondary);padding:6px 14px;border-radius:9px;transition:all .18s}
 .segment button.active{background:#fff;color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.10)}
 .tool-label{font-size:13px;color:var(--text-muted);font-weight:600;white-space:nowrap}
-.batch-download-btn{position:fixed;right:22px;bottom:30px;z-index:900;background:var(--green);color:#fff;padding:14px 26px;border-radius:99px;font-size:15px;font-weight:700;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;gap:8px;flex-direction:row;flex-wrap:nowrap;white-space:nowrap;transition:all .2s;box-shadow:0 8px 24px rgba(41,163,102,.40);line-height:1;width:auto;height:auto}
-.batch-download-btn:hover{background:var(--green-deep);transform:translateY(-1px)}
-.batch-download-btn.active{display:inline-flex}
+/* Floating Action Button (circular green with white border) */
+.batch-download-btn{position:fixed;right:22px;bottom:82px;z-index:900;width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;border:3px solid #fff;display:none;align-items:center;justify-content:center;gap:1px;flex-direction:column;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(41,163,102,.40);font-family:inherit;padding:0}
+.batch-download-btn:hover{background:var(--green-deep);transform:translateY(-2px) scale(1.05)}
+.batch-download-btn.active{display:flex}
 .batch-download-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.batch-download-btn .fab-icon{width:22px;height:22px}
+.batch-download-btn .fab-text{font-size:10px;font-weight:700}
+
+/* Bottom navigation bar */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:.5px solid var(--hair);display:flex;z-index:850;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--text-muted);font-size:11px;font-weight:600;transition:color .2s;border:none;background:transparent;font-family:inherit}
+.bottom-nav-item.active{color:var(--green)}
+.bottom-nav-item svg{width:22px;height:22px}
+
+/* Download list view */
+.download-list-view{display:none;padding:20px 20px 80px;max-width:var(--max-width);margin:0 auto}
+.download-list-view.active{display:block}
+.download-list-view h2{font-size:18px;font-weight:800;margin-bottom:16px}
+.dl-item{display:flex;align-items:center;padding:14px 16px;border-radius:var(--radius-sm);background:var(--card);margin-bottom:10px;gap:14px;box-shadow:var(--shadow)}
+.dl-item-thumb{width:48px;height:48px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.dl-item-thumb svg{width:24px;height:24px;color:var(--text-muted)}
+.dl-item-thumb img{width:100%;height:100%;object-fit:cover}
+.dl-item-info{flex:1;min-width:0}
+.dl-item-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-item-meta{font-size:12px;color:var(--text-muted);margin-top:3px;display:flex;gap:8px}
+.dl-item-menu{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:18px;flex-shrink:0}
+.dl-item-menu:hover{background:var(--surface)}
+.dl-empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.dl-empty p{font-size:14px;margin-top:8px}
+
+/* Download menu popup */
+.dl-menu-popup{position:fixed;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:9999;overflow:hidden;display:none;min-width:140px}
+.dl-menu-popup.active{display:block}
+.dl-menu-item{padding:12px 18px;font-size:14px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:10px;border:none;background:transparent;width:100%;font-family:inherit;text-align:left}
+.dl-menu-item:hover{background:var(--surface)}
+.dl-menu-item + .dl-menu-item{border-top:.5px solid var(--hair)}
+
+/* Layout segment hidden (single column enforced) */
+#layoutSegment{display:none !important}
+.results-tools .tool-label:first-child{display:none}
 
 /* Result Card — vertical media card */
 .result-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:0;transition:box-shadow .2s;overflow:hidden;display:flex;flex-direction:column}
@@ -477,7 +512,8 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
           <option value="type_idx_author_title">Video_01_博主_标题</option>
         </select>
         <button class="batch-download-btn" id="batchDownloadBtn" onclick="showBatchDownloadModal()" disabled>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 批量下载
+          <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="fab-text">下载</span>
         </button>
       </div>
     </div>
@@ -496,6 +532,40 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
   </div>
   <p style="margin-top:8px;font-size:12px">Video Batch Parser</p>
 </footer>
+
+<!-- Bottom Navigation Bar -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-item active" onclick="switchView('parse')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+    <span>视频解析</span>
+  </button>
+  <button class="bottom-nav-item" onclick="switchView('downloads')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span>下载列表</span>
+  </button>
+</nav>
+
+<!-- Download List View -->
+<div class="download-list-view" id="downloadListView">
+  <h2>下载列表</h2>
+  <div id="downloadListContainer"></div>
+  <div class="dl-empty" id="downloadListEmpty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <p>暂无下载记录</p>
+  </div>
+</div>
+
+<!-- Download item menu popup -->
+<div class="dl-menu-popup" id="dlMenuPopup">
+  <button class="dl-menu-item" onclick="openDownloadFile()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    打开文件
+  </button>
+  <button class="dl-menu-item" onclick="showFileLocation()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    查看文件位置
+  </button>
+</div>
 
 <!-- Usage Help Modal -->
 <div class="help-overlay" id="helpModal" onclick="if(event.target===this)closeHelp()">
@@ -670,14 +740,9 @@ var currentMode = 'batch'; // 'batch' or 'transcript'
 function setResultLayout(n){
   var list = document.getElementById('resultsList');
   if(!list) return;
-  list.classList.toggle('single-col', n === 1);
-  var seg = document.getElementById('layoutSegment');
-  if(seg){
-    var btns = seg.getElementsByTagName('button');
-    btns[0].className = n === 1 ? 'active' : '';
-    btns[1].className = n === 2 ? 'active' : '';
-  }
-  try{ localStorage.setItem('vp18_layout', String(n)); }catch(e){}
+  list.classList.toggle('single-col', true);
+  // Dual-column option removed; always single column
+  try{ localStorage.setItem('vp18_layout', '1'); }catch(e){}
 }
 function setNamingRule(v){
   var sel = document.getElementById('namingRule');
@@ -692,8 +757,8 @@ function setNamingRule(v){
 }
 (function restorePrefs(){
   try{
-    var layout = localStorage.getItem('vp18_layout');
-    if(layout === '1' || layout === '2'){ setResultLayout(parseInt(layout, 10)); }
+    // Always single column; dual-column option removed
+    setResultLayout(1);
     var naming = localStorage.getItem('vp18_naming');
     if(naming){ setNamingRule(naming); }
   }catch(e){}
@@ -2859,6 +2924,7 @@ async function downloadBlob(blob, filename){
       var data = await resp.json();
       if(data.ok){
         showToast('已保存: ' + data.filename + '\n保存位置: ' + data.path, 'success', 6000);
+        addDownloadRecord(filename, blob.size || 0, data.path);
         return;
       }
     }
@@ -2875,6 +2941,7 @@ async function downloadBlob(blob, filename){
   document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
   showToast('已下载: ' + filename + '\n请到浏览器默认下载目录查看(通常是"下载"文件夹)', 'success', 5000);
+  addDownloadRecord(filename, blob.size || 0, null);
 }
 
 function formatTextContent(result){
@@ -3291,6 +3358,156 @@ function toggleFaq(el){
   el.classList.toggle('open');
 }
 
+// ==================== Download History & View Switching ====================
+var downloadHistory = [];
+var currentMenuIndex = -1;
+var currentDlViewItem = null;
+
+function loadDownloadHistory(){
+  try{
+    var raw = localStorage.getItem('vp_download_history');
+    if(raw) downloadHistory = JSON.parse(raw);
+  }catch(e){ downloadHistory = []; }
+}
+
+function saveDownloadHistory(){
+  try{ localStorage.setItem('vp_download_history', JSON.stringify(downloadHistory.slice(-200))); }catch(e){}
+}
+
+function addDownloadRecord(filename, size, path){
+  var record = {
+    id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    filename: filename,
+    size: size || 0,
+    path: path || null,
+    date: new Date().toISOString()
+  };
+  downloadHistory.unshift(record);
+  if(downloadHistory.length > 200) downloadHistory.pop();
+  saveDownloadHistory();
+}
+
+function formatFileSize(bytes){
+  if(bytes === 0) return '0 B';
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function formatDlDate(iso){
+  var d = new Date(iso);
+  var y = d.getFullYear();
+  var m = d.getMonth() + 1;
+  var day = d.getDate();
+  var h = String(d.getHours()).padStart(2, '0');
+  var min = String(d.getMinutes()).padStart(2, '0');
+  return y + '/' + m + '/' + day + ' ' + h + ':' + min;
+}
+
+function getDlIconSvg(type){
+  if(type === 'video' || type === 'Video'){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+  }
+  if(type === 'photo' || type === 'Photo' || type === 'jpg' || type === 'png' || type === 'webp'){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+  }
+  if(type === 'zip'){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+  }
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+}
+
+function detectDlType(filename){
+  var lower = filename.toLowerCase();
+  if(lower.indexOf('video') >= 0 || lower.endsWith('.mp4')) return 'video';
+  if(lower.indexOf('photo') >= 0 || lower.endsWith('.jpg') || lower.endsWith('.png') || lower.endsWith('.webp')) return 'photo';
+  if(lower.endsWith('.zip')) return 'zip';
+  return 'txt';
+}
+
+function renderDownloadList(){
+  var container = document.getElementById('downloadListContainer');
+  var empty = document.getElementById('downloadListEmpty');
+  if(!container) return;
+  if(downloadHistory.length === 0){
+    container.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  var html = '';
+  for(var i = 0; i < downloadHistory.length; i++){
+    var item = downloadHistory[i];
+    var type = detectDlType(item.filename);
+    html += '<div class="dl-item">' +
+      '<div class="dl-item-thumb">' + getDlIconSvg(type) + '</div>' +
+      '<div class="dl-item-info">' +
+        '<div class="dl-item-name">' + escapeHtml(item.filename) + '</div>' +
+        '<div class="dl-item-meta">' + formatDlDate(item.date) + (item.size ? ' &middot; ' + formatFileSize(item.size) : '') + '</div>' +
+      '</div>' +
+      '<button class="dl-item-menu" onclick="showDlMenu(' + i + ', event)" title="更多">&#8942;</button>' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function switchView(view){
+  var mainEl = document.querySelector('.main');
+  var dlView = document.getElementById('downloadListView');
+  var footerEl = document.querySelector('.footer');
+  var navItems = document.querySelectorAll('.bottom-nav-item');
+  if(view === 'downloads'){
+    if(mainEl) mainEl.style.display = 'none';
+    if(footerEl) footerEl.style.display = 'none';
+    if(dlView) dlView.classList.add('active');
+    renderDownloadList();
+  } else {
+    if(mainEl) mainEl.style.display = '';
+    if(footerEl) footerEl.style.display = '';
+    if(dlView) dlView.classList.remove('active');
+  }
+  navItems.forEach(function(el, i){
+    el.classList.toggle('active', (view === 'parse' && i === 0) || (view === 'downloads' && i === 1));
+  });
+}
+
+function showDlMenu(index, event){
+  currentMenuIndex = index;
+  var popup = document.getElementById('dlMenuPopup');
+  if(!popup) return;
+  var rect = event.currentTarget.getBoundingClientRect();
+  popup.style.top = (rect.top - 4) + 'px';
+  popup.style.right = '16px';
+  popup.classList.add('active');
+  event.stopPropagation();
+}
+
+function openDownloadFile(){
+  var record = downloadHistory[currentMenuIndex];
+  if(!record) return;
+  // Try to open blob URL if cached, otherwise toast
+  showToast('请在浏览器下载目录中打开: ' + record.filename, 'info', 4000);
+  document.getElementById('dlMenuPopup').classList.remove('active');
+}
+
+function showFileLocation(){
+  var record = downloadHistory[currentMenuIndex];
+  if(!record) return;
+  if(record.path){
+    showToast('文件位置: ' + record.path, 'info', 5000);
+  } else {
+    showToast('文件已保存到浏览器默认下载目录（通常是"下载"文件夹）', 'info', 5000);
+  }
+  document.getElementById('dlMenuPopup').classList.remove('active');
+}
+
+document.addEventListener('click', function(e){
+  var popup = document.getElementById('dlMenuPopup');
+  if(popup && !popup.contains(e.target) && !e.target.closest('.dl-item-menu')){
+    popup.classList.remove('active');
+  }
+});
+
 // ==================== Init ====================
 document.getElementById('links').addEventListener('input', updateCharCount);
 document.getElementById('links').addEventListener('keydown', function(e){
@@ -3308,6 +3525,8 @@ document.getElementById('links').addEventListener('keydown', function(e){
 checkServerStatus();
 // Periodically recheck server status every 30 seconds
 setInterval(function(){ checkServerStatus(); }, 30000);
+// Load download history
+loadDownloadHistory();
 </script>
 <!-- PWA Service Worker Registration -->
 <script>
