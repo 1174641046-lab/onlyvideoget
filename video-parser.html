@@ -431,10 +431,10 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 
   <div class="card">
     <div class="card-label">输入链接</div>
-    <textarea id="links" placeholder="粘贴视频链接，每行一个（最多 20 个）&#10;支持小红书 / 抖音 / B站 / 快手 / 微博，可直接粘贴小红书分享文本自动提取博主名"></textarea>
+    <textarea id="links" placeholder="粘贴视频链接，每行一个（最多 20 个）&#10;支持小红书 / 抖音 / B站 / 快手 / 微博 / 视频号，可直接粘贴分享文本自动提取博主名"></textarea>
     <div class="hint-row">
       <div class="platform-dots">
-        <span class="plat-dot">小红书</span><span class="plat-dot">抖音</span><span class="plat-dot">B站</span><span class="plat-dot">快手</span><span class="plat-dot">微博</span>
+        <span class="plat-dot">小红书</span><span class="plat-dot">抖音</span><span class="plat-dot">B站</span><span class="plat-dot">快手</span><span class="plat-dot">微博</span><span class="plat-dot">视频号</span>
       </div>
       <span class="hint-count" id="charCount">0 条链接</span>
     </div>
@@ -568,7 +568,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
       </div>
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">支持哪些平台？<span class="arrow">&#9660;</span></div>
-        <div class="faq-a">当前支持小红书、抖音、B站、快手、微博等主流平台的视频和图文链接解析。</div>
+        <div class="faq-a">当前支持小红书、抖音、B站、快手、微博、视频号等主流平台的视频和图文链接解析。</div>
       </div>
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">批量解析是免费的吗？<span class="arrow">&#9660;</span></div>
@@ -724,6 +724,17 @@ var CORS_POST_PROXIES = [
 // DouParse free API endpoint (supports 9 platforms, no login required)
 var DOUPARSE_API = 'https://scratch.codepku.com/api/parse';
 
+// DouParse 1429 限额标志（今日免费额度用完时置位，用于给出明确提示）
+var DP_LIMIT_REACHED = false;
+var DP_LIMIT_TOASTED = false;
+function noteDpLimit(){
+  DP_LIMIT_REACHED = true;
+  if(!DP_LIMIT_TOASTED){
+    DP_LIMIT_TOASTED = true;
+    try{ showToast('DouParse 免费接口今日限额已触发，解析可能失败，请明天再试', 'error'); }catch(e){}
+  }
+}
+
 // ==================== Fetch with Timeout ====================
 function fetchWithTimeout(url, init, timeoutMs){
   timeoutMs = timeoutMs || 12000;
@@ -750,6 +761,7 @@ async function parseViaDouParseAPI(url){
       if(json.code === 0 && json.data){
         return await mapDouParseData(json.data, url);
       }
+      if(json.code === 1429){ noteDpLimit(); }
     }
   } catch(e){ /* CORS blocked, try proxies */ }
 
@@ -764,6 +776,7 @@ async function parseViaDouParseAPI(url){
           return await mapDouParseData(json.data, url);
         }
         if(json.code === 1429){
+          noteDpLimit();
           console.warn('DouParse daily limit reached');
           return null;
         }
@@ -862,7 +875,7 @@ function cleanTitleText(text){
   // 清理平台后缀: " | 小红书 - 你的生活兴趣社区" / " - 小红书" / " - 抖音" 等
   t = t.replace(/\s*[\|｜]\s*小红书[\s\S]*$/g, '');
   t = t.replace(/\s*[-–—]\s*你的生活兴趣社区\s*$/g, '');
-  t = t.replace(/\s*[-–—]\s*(小红书|抖音|快手|微博|哔哩哔哩|B站)\s*$/gi, '');
+  t = t.replace(/\s*[-–—]\s*(小红书|抖音|快手|微博|哔哩哔哩|B站|视频号)\s*$/gi, '');
   t = t.replace(/(?:[_\s]*(?:哔哩哔哩|bilibili))+\s*$/gi, '');
   return t.replace(/\s+/g, ' ').trim();
 }
@@ -942,6 +955,7 @@ function detectPlatform(url){
   if(url.indexOf('bilibili.com') >= 0 || url.indexOf('b23.tv') >= 0) return 'bilibili';
   if(url.indexOf('kuaishou.com') >= 0 || url.indexOf('chenzhongtech.com') >= 0) return 'kuaishou';
   if(url.indexOf('weibo.com') >= 0 || url.indexOf('weibo.cn') >= 0) return 'weibo';
+  if(url.indexOf('weixin.qq.com/sph') >= 0 || url.indexOf('channels.weixin.qq.com') >= 0) return 'weixin';
   if(url.indexOf('tiktok.com') >= 0) return 'tiktok';
   return 'unknown';
 }
@@ -966,7 +980,10 @@ function extractTitleFromText(text){
     var dashIdx = inner.indexOf(' - ');
     if(dashIdx > 0) return inner.substring(0, dashIdx).trim();
     // Fallback: no " - " separator, use whole content
-    return inner.trim();
+    var t = inner.trim();
+    // 纯平台名占位（如"【视频号】"）不是标题
+    if(/^(视频号|快手|抖音|小红书|微博|B站|哔哩哔哩|链接|分享|视频)$/.test(t)) return '';
+    return t;
   }
   // DY/other: "标题 - 抖音" or just title before URL
   var urlMatch = text.match(/https?:\/\/[^\s<>"']+/i);
@@ -1449,13 +1466,14 @@ async function parseSingleLink(url, index, textAuthor, textTitle){
     coverUrl: '',
     desc: '',
     author: textAuthor || '',
-    title: '',
-    error: '解析失败，请编辑/复制'
+    title: DP_LIMIT_REACHED ? '免费额度已用完，明天再试' : '',
+    error: DP_LIMIT_REACHED ? 'DouParse 今日免费额度已用完' : '解析失败，请编辑/复制'
   };
 }
 
 // ==================== Batch Transcript Parse ====================
 async function batchTranscript(){
+  DP_LIMIT_REACHED = false; DP_LIMIT_TOASTED = false;
   var textarea = document.getElementById('links');
   var rawText = textarea.value.trim();
   
@@ -1585,6 +1603,7 @@ async function batchTranscript(){
 
 // ==================== Batch Parse ====================
 async function batchParse(){
+  DP_LIMIT_REACHED = false; DP_LIMIT_TOASTED = false;
   var textarea = document.getElementById('links');
   var rawText = textarea.value.trim();
   
@@ -1706,6 +1725,7 @@ function getPlatformLabel(platform){
     'bilibili': 'B站',
     'kuaishou': '快手',
     'weibo': '微博',
+    'weixin': '视频号',
     'tiktok': 'TikTok',
     'unknown': '未知平台'
   };
