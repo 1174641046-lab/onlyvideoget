@@ -473,7 +473,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 
   <div class="card">
     <div class="card-label">输入链接</div>
-    <textarea id="links" placeholder="粘贴视频链接，每行一个（最多 20 个）&#10;支持小红书 / 抖音 / B站 / 快手 / 微博 / 视频号，可直接粘贴分享文本自动提取博主名"></textarea>
+    <textarea id="links" placeholder="粘贴视频链接，每行一个（最多 20 个）&#10;支持小红书 / 抖音 / B站 / 快手 / 微博 / 视频号，可直接粘贴分享文本自动提取博主名" onfocus="autoFillClipboard()"></textarea>
     <div class="hint-row">
       <div class="platform-dots">
         <span class="plat-dot">小红书</span><span class="plat-dot">抖音</span><span class="plat-dot">B站</span><span class="plat-dot">快手</span><span class="plat-dot">微博</span><span class="plat-dot">视频号</span>
@@ -2818,7 +2818,7 @@ async function downloadSingle(type, idx){
     filename = generateFileName('Video', idx, result.author, result.title, 'mp4', isBatch);
     url = result.videoUrl;
     onProgress(0, '正在下载视频...');
-    await downloadFile(url, filename, onProgress);
+    await downloadFile(url, filename, onProgress, 'video');
     onProgress(100, '视频下载完成');
   } else if(type === 'photo'){
     if(!result.coverUrl){
@@ -2828,7 +2828,7 @@ async function downloadSingle(type, idx){
     filename = generateFileName('Photo', idx, result.author, result.title, 'jpg', isBatch);
     url = result.coverUrl;
     onProgress(0, '正在下载封面...');
-    await downloadFile(url, filename, onProgress);
+    await downloadFile(url, filename, onProgress, 'photo');
     onProgress(100, '封面下载完成');
   } else if(type === 'txt'){
     filename = generateFileName('Txt', idx, result.author, result.title, 'txt', isBatch);
@@ -2844,7 +2844,7 @@ async function downloadSingle(type, idx){
   }, 2000);
 }
 
-async function downloadFile(url, filename, onProgress){
+async function downloadFile(url, filename, onProgress, mediaType){
   onProgress = onProgress || function(){};
   
   // Helper: fetch blob with XMLHttpRequest for progress tracking
@@ -2913,10 +2913,17 @@ async function downloadFile(url, filename, onProgress){
     }
   }
   
-  // Fallback: open in new tab with no-referrer
+  // 所有抓取策略均失败（通常是平台 CDN 不带 CORS 头）。
+  // 移动端（尤其安卓）无法用 blob 直接保存跨域视频，
+  // 改为打开直链 + 复制链接，让用户在浏览器长按「保存视频」或用下载器 App 粘贴。
   onProgress(0, '直接下载失败');
-  showToast('直接下载失败，已打开链接，请右键保存', 'error');
-  window.open(url, '_blank');
+  if(mediaType === 'video'){
+    await openVideoForSave(url, filename);
+  } else {
+    try{ if(navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(url); }catch(e){}
+    window.open(url, '_blank');
+    showToast('链接已复制并打开，请长按保存', 'success', 5000);
+  }
 }
 
 async function downloadBlob(blob, filename){
@@ -2947,6 +2954,40 @@ async function downloadBlob(blob, filename){
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
   showToast('已下载: ' + filename + '\n请到浏览器默认下载目录查看(通常是"下载"文件夹)', 'success', 5000);
   addDownloadRecord(filename, blob.size || 0, null);
+}
+
+function isAndroid(){
+  return /Android/i.test(navigator.userAgent);
+}
+
+// 移动端（尤其安卓）无法用 blob 直接保存跨域视频，
+// 最可靠的做法：打开直链 + 复制链接，让用户在浏览器长按「保存视频」或用下载器 App 粘贴。
+async function openVideoForSave(url, filename){
+  // 1) 尽力用带 download 属性的 a 标签触发（部分环境可直接下载）
+  try{
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'video.mp4';
+    a.setAttribute('referrerpolicy', 'no-referrer');
+    a.rel = 'noopener';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }catch(e){}
+  // 2) 复制直链，方便用下载器 App 粘贴
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+    }
+  }catch(e){}
+  // 3) 新标签打开，安卓 Chrome 可长按视频「保存视频」
+  window.open(url, '_blank');
+  if(isAndroid()){
+    showToast('已打开视频并复制链接：在浏览器中「长按视频 → 保存视频」，或把链接粘到下载器 App', 'success', 7000);
+  } else {
+    showToast('已打开视频并复制链接：请右键/长按视频保存', 'success', 6000);
+  }
 }
 
 function formatTextContent(result){
@@ -3339,6 +3380,27 @@ async function pasteFromClipboard(){
     }
   } catch(e){
     showToast('请手动粘贴（Ctrl+V）', 'error');
+  }
+}
+
+// 手机端聚焦输入框时自动读取剪切板（聚焦=用户手势，安卓/iOS 均允许 readText）
+// 仅在输入框为空时自动填入，避免覆盖用户已输入内容
+var _autoFilled = false;
+async function autoFillClipboard(){
+  try{
+    if(_autoFilled) return;
+    if(!navigator.clipboard || !navigator.clipboard.readText) return;
+    var textarea = document.getElementById('links');
+    if(!textarea) return;
+    if(textarea.value.trim()) return;
+    var text = await navigator.clipboard.readText();
+    if(text && text.trim()){
+      textarea.value = text.trim();
+      updateCharCount();
+      _autoFilled = true;
+    }
+  }catch(e){
+    // 用户未授权或浏览器限制：静默失败，用户仍可点「粘贴」按钮
   }
 }
 
