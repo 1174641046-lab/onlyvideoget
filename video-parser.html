@@ -374,6 +374,10 @@ textarea#links::placeholder{color:#B9BCC1}
 .transcribe-progress.failed .label::before{content:'\2717';display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:var(--error);color:#fff;border-radius:50%;font-size:10px;font-weight:bold;flex-shrink:0}
 .dl-btn.dl-local{background:var(--blue);color:#fff}
 .dl-btn.dl-local:hover{background:var(--blue-deep)}
+.dl-btn.dl-redirect{background:var(--green);color:#fff}
+.dl-btn.dl-redirect:hover{background:var(--green-deep,#34A853);transform:translateY(-1px);box-shadow:0 4px 12px rgba(52,168,83,.35)}
+.redirect-row{margin-top:10px;display:flex;gap:8px}
+.result-error-msg{margin-top:10px;font-size:12.5px;line-height:1.7;color:var(--error,#D70015);background:rgba(215,0,21,.06);border-radius:10px;padding:10px 12px;white-space:pre-line}
 
 /* Download Progress Bar */
 .download-progress{margin-top:8px;display:none}
@@ -685,8 +689,8 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
     <div class="modal-section">
       <div class="modal-section-title">选择下载方式</div>
       <div class="modal-options">
-        <div class="modal-option" data-method="zip" onclick="selectBatchMethod('zip')">打包 ZIP</div>
         <div class="modal-option selected" data-method="direct" onclick="selectBatchMethod('direct')">逐个下载</div>
+        <div class="modal-option" data-method="zip" onclick="selectBatchMethod('zip')">打包 ZIP</div>
       </div>
     </div>
     <div class="modal-section">
@@ -835,6 +839,9 @@ async function parseViaDouParseAPI(url){
         return await mapDouParseData(json.data, url);
       }
       if(json.code === 1429){ noteDpLimit(); }
+      if(json.code === 1001 || (json.message && json.message.indexOf('视频号') >= 0)){
+        return { _unsupported: true, message: json.message || '该平台暂不支持网页端解析' };
+      }
     }
   } catch(e){ /* CORS blocked, try proxies */ }
 
@@ -852,6 +859,9 @@ async function parseViaDouParseAPI(url){
           noteDpLimit();
           console.warn('DouParse daily limit reached');
           return null;
+        }
+        if(json.code === 1001 || (json.message && json.message.indexOf('视频号') >= 0)){
+          return { _unsupported: true, message: json.message || '该平台暂不支持网页端解析' };
         }
       }
     } catch(e){
@@ -1028,7 +1038,7 @@ function detectPlatform(url){
   if(url.indexOf('bilibili.com') >= 0 || url.indexOf('b23.tv') >= 0) return 'bilibili';
   if(url.indexOf('kuaishou.com') >= 0 || url.indexOf('chenzhongtech.com') >= 0) return 'kuaishou';
   if(url.indexOf('weibo.com') >= 0 || url.indexOf('weibo.cn') >= 0) return 'weibo';
-  if(url.indexOf('weixin.qq.com/sph') >= 0 || url.indexOf('channels.weixin.qq.com') >= 0) return 'weixin';
+  if(url.indexOf('weixin.qq.com/sph') >= 0 || url.indexOf('channels.weixin.qq.com') >= 0 || url.indexOf('finder.video.qq.com') >= 0) return 'weixin';
   if(url.indexOf('tiktok.com') >= 0) return 'tiktok';
   return 'unknown';
 }
@@ -1477,6 +1487,22 @@ async function parseSingleLink(url, index, textAuthor, textTitle){
   try{
     var dpResult = await parseViaDouParseAPI(url);
     if(dpResult){
+      // 视频号等平台 API 明确不支持，返回专属提示
+      if(dpResult._unsupported){
+        return {
+          platform: platform,
+          index: index,
+          status: 'error',
+          originalUrl: url,
+          videoUrl: '',
+          coverUrl: '',
+          desc: '',
+          author: textAuthor || '',
+          title: textTitle ? cleanTitleText(textTitle) : '',
+          redirectUrl: 'https://sph.miuistore.com?sph_url=' + encodeURIComponent(url),
+          error: '视频号仅支持在微信内观看，本站无法直接解析。点击下方绿色按钮，跳转到外部工具下载（链接已自动带上）'
+        };
+      }
       dpResult.platform = platform;
       dpResult.index = index;
       dpResult.status = 'success';
@@ -1530,6 +1556,21 @@ async function parseSingleLink(url, index, textAuthor, textTitle){
   }
   
   // Strategy 3: Return error but pre-fill author from text if available
+  if(platform === 'weixin'){
+    return {
+      platform: platform,
+      index: index,
+      status: 'error',
+      originalUrl: url,
+      videoUrl: '',
+      coverUrl: '',
+      desc: '',
+      author: textAuthor || '',
+      title: textTitle ? cleanTitleText(textTitle) : '',
+      redirectUrl: 'https://sph.miuistore.com?sph_url=' + encodeURIComponent(url),
+      error: '视频号仅支持在微信内观看，本站无法直接解析。点击下方绿色按钮，跳转到外部工具下载（链接已自动带上）'
+    };
+  }
   return {
     platform: platform,
     index: index,
@@ -1875,6 +1916,18 @@ function renderResultCard(result, cardId){
   }
   
   downloadHtml += '<button class="edit-btn" onclick="toggleEditForm(' + idx + ')">编辑</button>';
+
+  // 视频号等不支持的平台：显示跳转下载按钮
+  var redirectHtml = '';
+  if(result.status === 'error' && result.redirectUrl){
+    redirectHtml = '<div class="redirect-row"><button class="dl-btn dl-redirect" onclick="window.open(\'' + escapeJs(result.redirectUrl) + '\')">跳转下载视频</button></div>';
+  }
+
+  // 错误提示
+  var errorHtml = '';
+  if(result.status === 'error' && result.error){
+    errorHtml = '<div class="result-error-msg">' + escapeHtml(result.error) + '</div>';
+  }
   
   var editFormHtml = '<div class="edit-form" id="editForm-' + idx + '">' +
     '<div class="form-row"><div class="label-line"><label>博主名称</label><button class="copy-field-btn" onclick="copyFieldValue(\'editAuthor-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editAuthor-' + idx + '" value="' + escapeHtml(result.author || '') + '" placeholder="博主名称"></div></div>' +
@@ -1951,6 +2004,8 @@ function renderResultCard(result, cardId){
     '</div>' +
     descHtml +
     tagsHtml +
+    errorHtml +
+    redirectHtml +
     '<div class="download-row">' + downloadHtml + '</div>' +
     '<div class="download-progress" id="downloadProgress-' + idx + '">' +
       '<div class="download-progress-track"><div class="download-progress-fill" id="downloadProgressFill-' + idx + '"></div></div>' +
@@ -3369,44 +3424,46 @@ function updateCharCount(){
 }
 
 async function pasteFromClipboard(){
+  var textarea = document.getElementById('links');
+
+  // Method 1: Modern Clipboard API (works on desktop Chrome, Android Chrome PWA with permission)
   try{
-    var text = await navigator.clipboard.readText();
-    if(text){
-      var textarea = document.getElementById('links');
-      if(textarea.value.trim()){
-        textarea.value += '\n' + text.trim();
+    if(navigator.clipboard && typeof navigator.clipboard.readText === 'function'){
+      var text = await navigator.clipboard.readText();
+      if(text && text.trim()){
+        if(textarea.value.trim()){
+          textarea.value += '\n' + text.trim();
+        } else {
+          textarea.value = text.trim();
+        }
+        updateCharCount();
+        showToast('已粘贴', 'success');
+        return;
       } else {
-        textarea.value = text.trim();
+        showToast('剪贴板为空', 'error');
+        return;
       }
-      updateCharCount();
-      showToast('已粘贴', 'success');
-    } else {
-      showToast('剪贴板为空', 'error');
     }
   } catch(e){
-    showToast('请手动粘贴（Ctrl+V）', 'error');
+    console.warn('Clipboard API failed:', e.message);
   }
-}
 
-// 手机端聚焦输入框时自动读取剪切板（聚焦=用户手势，安卓/iOS 均允许 readText）
-// 仅在输入框为空时自动填入，避免覆盖用户已输入内容
-var _autoFilled = false;
-async function autoFillClipboard(){
+  // Method 2: execCommand paste (deprecated, may work on some Android browsers)
   try{
-    if(_autoFilled) return;
-    if(!navigator.clipboard || !navigator.clipboard.readText) return;
-    var textarea = document.getElementById('links');
-    if(!textarea) return;
-    if(textarea.value.trim()) return;
-    var text = await navigator.clipboard.readText();
-    if(text && text.trim()){
-      textarea.value = text.trim();
-      updateCharCount();
-      _autoFilled = true;
+    textarea.focus();
+    var ok = document.execCommand('paste');
+    if(ok){
+      setTimeout(function(){
+        if(textarea.value){ updateCharCount(); showToast('已粘贴', 'success'); }
+      }, 100);
+      return;
     }
-  }catch(e){
-    // 用户未授权或浏览器限制：静默失败，用户仍可点「粘贴」按钮
-  }
+  } catch(e2){}
+
+  // Method 3: Focus textarea and guide user (mobile fallback)
+  textarea.focus();
+  try{ textarea.click(); }catch(e3){}
+  showToast('已聚焦输入框，请长按选择「粘贴」', 'info', 4000);
 }
 
 function clearInput(){
