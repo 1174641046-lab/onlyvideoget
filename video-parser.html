@@ -473,7 +473,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 
   <div class="card">
     <div class="card-label">输入链接</div>
-    <textarea id="links" placeholder="粘贴视频链接，每行一个（最多 20 个）&#10;支持小红书 / 抖音 / B站 / 快手 / 微博 / 视频号，可直接粘贴分享文本自动提取博主名" onfocus="autoFillClipboard()"></textarea>
+    <textarea id="links" placeholder="粘贴视频链接，每行一个（最多 20 个）&#10;支持小红书 / 抖音 / B站 / 快手 / 微博 / 视频号，可直接粘贴分享文本自动提取博主名"></textarea>
     <div class="hint-row">
       <div class="platform-dots">
         <span class="plat-dot">小红书</span><span class="plat-dot">抖音</span><span class="plat-dot">B站</span><span class="plat-dot">快手</span><span class="plat-dot">微博</span><span class="plat-dot">视频号</span>
@@ -685,8 +685,8 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
     <div class="modal-section">
       <div class="modal-section-title">选择下载方式</div>
       <div class="modal-options">
-        <div class="modal-option selected" data-method="zip" onclick="selectBatchMethod('zip')">打包 ZIP</div>
-        <div class="modal-option" data-method="direct" onclick="selectBatchMethod('direct')">逐个下载</div>
+        <div class="modal-option" data-method="zip" onclick="selectBatchMethod('zip')">打包 ZIP</div>
+        <div class="modal-option selected" data-method="direct" onclick="selectBatchMethod('direct')">逐个下载</div>
       </div>
     </div>
     <div class="modal-section">
@@ -3007,7 +3007,7 @@ function formatTextContent(result){
 
 // ==================== Batch Download Modal ====================
 var batchDownloadType = 'video';
-var batchDownloadMethod = 'zip';
+var batchDownloadMethod = 'direct';
 
 function showBatchDownloadModal(){
   var successResults = parseResults.filter(function(r){ return r.status === 'success'; });
@@ -3024,7 +3024,7 @@ function showBatchDownloadModal(){
     '共 ' + successResults.length + ' 条结果<br>视频 ' + videoCount + ' 个 | 封面 ' + coverCount + ' 个 | 文案 ' + txtCount + ' 个';
   
   batchDownloadType = 'video';
-  batchDownloadMethod = 'zip';
+  batchDownloadMethod = 'direct';
   
   var typeOpts = document.querySelectorAll('#batchModal .modal-option[data-type]');
   for(var i = 0; i < typeOpts.length; i++){
@@ -3032,7 +3032,7 @@ function showBatchDownloadModal(){
   }
   var methodOpts = document.querySelectorAll('#batchModal .modal-option[data-method]');
   for(var i = 0; i < methodOpts.length; i++){
-    methodOpts[i].classList.toggle('selected', methodOpts[i].getAttribute('data-method') === 'zip');
+    methodOpts[i].classList.toggle('selected', methodOpts[i].getAttribute('data-method') === 'direct');
   }
   
   document.getElementById('batchModalProgress').classList.remove('active');
@@ -3149,6 +3149,11 @@ async function batchDownloadZip(results, type, isBatch, startIndex){
         }
       }
     }
+  }
+
+  if(files.length === 0){
+    showToast('没有可打包的文件：视频/封面多为跨域限制，无法抓取，请改用「逐个下载」', 'error', 6000);
+    return;
   }
   
   progressText.textContent = '生成ZIP...';
