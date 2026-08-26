@@ -3425,45 +3425,73 @@ function updateCharCount(){
 
 async function pasteFromClipboard(){
   var textarea = document.getElementById('links');
+  if(!textarea) return;
 
-  // Method 1: Modern Clipboard API (works on desktop Chrome, Android Chrome PWA with permission)
-  try{
-    if(navigator.clipboard && typeof navigator.clipboard.readText === 'function'){
+  // 先聚焦输入框：PWA 独立窗口下 document 可能未聚焦，readText 会报 "Document is not focused" 而失败
+  try{ textarea.focus(); }catch(e){}
+  await new Promise(function(r){ setTimeout(r, 50); });
+
+  var hasClipboardAPI = !!(navigator.clipboard && typeof navigator.clipboard.readText === 'function');
+  var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+
+  // Method 1: 标准 Clipboard API（安卓 Chrome / 桌面有效；iOS 不支持读取）
+  if(hasClipboardAPI){
+    try{
       var text = await navigator.clipboard.readText();
       if(text && text.trim()){
-        if(textarea.value.trim()){
-          textarea.value += '\n' + text.trim();
-        } else {
-          textarea.value = text.trim();
-        }
-        updateCharCount();
+        insertClipboardText(textarea, text.trim());
         showToast('已粘贴', 'success');
         return;
-      } else {
-        showToast('剪贴板为空', 'error');
+      }
+      showToast('剪贴板为空', 'error');
+      return;
+    } catch(e){
+      console.warn('Clipboard API read failed:', e && e.message);
+      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')){
+        // 权限被拒：查询状态并给出可操作提示
+        try{
+          if(navigator.permissions && navigator.permissions.query){
+            var st = await navigator.permissions.query({name:'clipboard-read'});
+            if(st.state === 'denied'){
+              showToast('剪贴板权限被拒绝：请到浏览器站点设置→权限→剪贴板改为「允许」后重试', 'error', 6000);
+              return;
+            }
+          }
+        }catch(e2){}
+        showToast('剪贴板读取被拒绝，请允许权限后重试', 'error', 5000);
         return;
       }
     }
-  } catch(e){
-    console.warn('Clipboard API failed:', e.message);
   }
 
-  // Method 2: execCommand paste (deprecated, may work on some Android browsers)
+  // Method 2: 安卓旧版 execCommand 兜底
   try{
     textarea.focus();
-    var ok = document.execCommand('paste');
-    if(ok){
-      setTimeout(function(){
-        if(textarea.value){ updateCharCount(); showToast('已粘贴', 'success'); }
-      }, 100);
-      return;
+    if(document.execCommand){
+      var ok = document.execCommand('paste');
+      if(ok){
+        await new Promise(function(r){ setTimeout(r, 120); });
+        if(textarea.value.trim()){ updateCharCount(); showToast('已粘贴', 'success'); return; }
+      }
     }
-  } catch(e2){}
+  }catch(e2){}
 
-  // Method 3: Focus textarea and guide user (mobile fallback)
-  textarea.focus();
-  try{ textarea.click(); }catch(e3){}
-  showToast('已聚焦输入框，请长按选择「粘贴」', 'info', 4000);
+  // Method 3: 末路 —— 聚焦并定位光标到末尾，引导用户点输入框触发原生粘贴
+  try{ textarea.focus(); textarea.setSelectionRange(textarea.value.length, textarea.value.length); }catch(e3){}
+  if(isIOS){
+    showToast('苹果系统限制网页读剪贴板，已帮你聚焦输入框：请点一下输入框→在菜单选「粘贴」', 'info', 6000);
+  } else {
+    showToast('已聚焦输入框，请点一下输入框，在弹出菜单选「粘贴」', 'info', 5000);
+  }
+}
+
+function insertClipboardText(textarea, text){
+  if(textarea.value.trim()){
+    textarea.value += '\n' + text;
+  } else {
+    textarea.value = text;
+  }
+  updateCharCount();
 }
 
 function clearInput(){
