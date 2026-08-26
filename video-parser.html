@@ -454,7 +454,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
   <div class="header-inner">
     <div class="logo">
       <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></div>
-      <span>视频解析工具 <span class="sub">V22</span></span>
+      <span>视频解析工具 <span class="sub">V23</span></span>
     </div>
     <div class="header-actions">
       <button class="pill-ghost" onclick="openHelp('quick')">使用帮助</button>
@@ -606,7 +606,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
         <div class="step"><div class="step-num">2</div><h3>粘贴链接</h3><p>将链接粘贴到输入框中，每行一个链接（最多支持20个）</p></div>
         <div class="step"><div class="step-num">3</div><h3>批量下载</h3><p>点击「批量解析」，等待处理完成后下载视频、封面和文案</p></div>
       </div>
-      <h4>V22 新功能</h4>
+      <h4>V23 新功能</h4>
       <ul>
         <li>结果卡片默认<b>双列排列</b>，结果区工具栏「排列」可切换单列/双列（选择会被记住）</li>
         <li>iOS 风命名规则分段控件，替代旧版下拉框</li>
@@ -1522,49 +1522,78 @@ function extractSphVideo(obj, depth){
   return null;
 }
 
-// 视频号：经自建 Cloudflare Worker 代理调 convry 后端，拿直链
+// 视频号：经自建 Cloudflare Worker v2（多策略解析）
+// Worker 返回格式：{ success:true, videoUrl:"...", title:"..." }
+//            或 { success:false, error:"...", redirectUrl:"..." }
 async function parseViaConvryWorker(url){
   if(!SPH_WORKER_URL) return null;
   try{
     var endpoint = SPH_WORKER_URL + (SPH_WORKER_URL.indexOf('?') >= 0 ? '&' : '?') + 'url=' + encodeURIComponent(url);
-    var resp = await fetchWithTimeout(endpoint, {method:'GET'}, 15000);
+    var resp = await fetchWithTimeout(endpoint, {method:'GET'}, 20000);
     if(!resp.ok) return null;
     var json = await resp.json();
-    if(!json || json.error) return null;
-    var videoUrl = extractSphVideo(json);
-    if(videoUrl){
-      // 升级为 https，避免 PWA(https) 下混合内容被浏览器拦截
-      videoUrl = videoUrl.replace(/^http:\/\//i, 'https://');
+    if(!json) return null;
+
+    // 成功：拿到直链
+    if(json.success && json.videoUrl){
+      var videoUrl = json.videoUrl.replace(/^http:\/\//i, 'https://');
       return {
         platform: 'weixin',
         status: 'success',
         videoUrl: videoUrl,
-        coverUrl: '',
+        coverUrl: json.coverUrl || '',
         desc: '',
-        author: (json.author || (json.data && json.data.author) || '') + '',
-        title: (json.title || (json.data && json.data.title) || '') + '',
+        author: json.author || '',
+        title: json.title || '',
         tags: []
       };
     }
+
+    // 失败但有跳转链接：返回 error + redirectUrl，让前端显示跳转按钮
+    if(json.success === false && json.redirectUrl){
+      return {
+        platform: 'weixin',
+        status: 'error',
+        originalUrl: url,
+        videoUrl: '',
+        coverUrl: '',
+        desc: '',
+        author: '',
+        title: '',
+        tags: [],
+        redirectUrl: json.redirectUrl,
+        error: json.error || '视频号解析失败，请使用跳转下载'
+      };
+    }
+
+    // 其他情况视为失败
+    return null;
   }catch(e){
-    console.warn('convry worker parse failed:', e && e.message);
+    console.warn('sph worker parse failed:', e && e.message);
+    return null;
   }
-  return null;
 }
 
 async function parseSingleLink(url, index, textAuthor, textTitle){
   var platform = detectPlatform(url);
 
-  // 视频号优先走自建 Worker 代理（直接拿直链）；失败再走通用策略
+  // 视频号优先走自建 Worker v2（多策略解析：直链优先，失败给跳转链接）
   if(platform === 'weixin'){
     try{
       var cw = await parseViaConvryWorker(url);
       if(cw){
         cw.index = index;
-        if(!cw.author && textAuthor) cw.author = textAuthor;
-        if(textTitle && !cw._titleFromText){ cw.title = cleanTitleText(textTitle); cw._titleFromText = true; }
+        if(cw.status === 'success'){
+          if(!cw.author && textAuthor) cw.author = textAuthor;
+          if(textTitle && !cw._titleFromText){ cw.title = cleanTitleText(textTitle); cw._titleFromText = true; }
+        } else {
+          // error + redirectUrl 的情况也直接返回
+          if(textAuthor) cw.author = textAuthor;
+          if(textTitle) cw.title = cleanTitleText(textTitle);
+        }
         return cw;
       }
+      // Worker 完全无响应（null），继续走 DouParse
     }catch(e){ console.warn('weixin worker path failed:', e.message); }
   }
 
