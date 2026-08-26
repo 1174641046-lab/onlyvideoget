@@ -801,6 +801,12 @@ var CORS_POST_PROXIES = [
 // DouParse free API endpoint (supports 9 platforms, no login required)
 var DOUPARSE_API = 'https://scratch.codepku.com/api/parse';
 
+// 视频号解析代理（Cloudflare Worker）。留空则视频号走「跳转外部工具」方案。
+// 部署方法见 videoparser-worker/README：把该目录 wrangler deploy 后，把你的
+// *.workers.dev 地址填到这里即可（例如 'https://videoparser-sph.xxx.workers.dev'）。
+// Worker 会伪装成 convry.com 去调它的后端，并补上跨域头，让纯静态 PWA 也能直接拿直链。
+var SPH_WORKER_URL = '';
+
 // DouParse 1429 限额标志（今日免费额度用完时置位，用于给出明确提示）
 var DP_LIMIT_REACHED = false;
 var DP_LIMIT_TOASTED = false;
@@ -1480,8 +1486,87 @@ function parseGeneric(html, originalUrl){
 }
 
 // ==================== Main Parse Function ====================
+// 从 convry 返回的 JSON 里递归找出视频直链（字段名 live_url / play_url / url 等）
+function extractSphVideo(obj, depth){
+  if(!obj || depth > 6) return null;
+  if(typeof obj === 'string'){
+    // 视频号直链通常带这些特征
+    if(/\.(mp4|flv|m3u8)(\?|$)/i.test(obj) || /finder\.video\.qq\.com|vd\.meitudata\.com|tx\.v\.qq\.com|mp\.weixin\.qq\.com\/vweixin\.php/i.test(obj)){
+      return obj;
+    }
+    return null;
+  }
+  if(Array.isArray(obj)){
+    for(var i=0;i<obj.length;i++){
+      var r = extractSphVideo(obj[i], (depth||0)+1);
+      if(r) return r;
+    }
+    return null;
+  }
+  if(typeof obj === 'object'){
+    // 优先读取已知字段
+    var candidates = [obj.live_url, obj.play_url, obj.video_url, obj.url, obj.src, obj.playUrl, obj.videoUrl];
+    for(var k=0;k<candidates.length;k++){
+      if(typeof candidates[k] === 'string' && candidates[k]){
+        var r2 = extractSphVideo(candidates[k], (depth||0)+1);
+        if(r2) return r2;
+      }
+    }
+    for(var key in obj){
+      if(obj.hasOwnProperty(key)){
+        var r3 = extractSphVideo(obj[key], (depth||0)+1);
+        if(r3) return r3;
+      }
+    }
+  }
+  return null;
+}
+
+// 视频号：经自建 Cloudflare Worker 代理调 convry 后端，拿直链
+async function parseViaConvryWorker(url){
+  if(!SPH_WORKER_URL) return null;
+  try{
+    var endpoint = SPH_WORKER_URL + (SPH_WORKER_URL.indexOf('?') >= 0 ? '&' : '?') + 'url=' + encodeURIComponent(url);
+    var resp = await fetchWithTimeout(endpoint, {method:'GET'}, 15000);
+    if(!resp.ok) return null;
+    var json = await resp.json();
+    if(!json || json.error) return null;
+    var videoUrl = extractSphVideo(json);
+    if(videoUrl){
+      // 升级为 https，避免 PWA(https) 下混合内容被浏览器拦截
+      videoUrl = videoUrl.replace(/^http:\/\//i, 'https://');
+      return {
+        platform: 'weixin',
+        status: 'success',
+        videoUrl: videoUrl,
+        coverUrl: '',
+        desc: '',
+        author: (json.author || (json.data && json.data.author) || '') + '',
+        title: (json.title || (json.data && json.data.title) || '') + '',
+        tags: []
+      };
+    }
+  }catch(e){
+    console.warn('convry worker parse failed:', e && e.message);
+  }
+  return null;
+}
+
 async function parseSingleLink(url, index, textAuthor, textTitle){
   var platform = detectPlatform(url);
+
+  // 视频号优先走自建 Worker 代理（直接拿直链）；失败再走通用策略
+  if(platform === 'weixin'){
+    try{
+      var cw = await parseViaConvryWorker(url);
+      if(cw){
+        cw.index = index;
+        if(!cw.author && textAuthor) cw.author = textAuthor;
+        if(textTitle && !cw._titleFromText){ cw.title = cleanTitleText(textTitle); cw._titleFromText = true; }
+        return cw;
+      }
+    }catch(e){ console.warn('weixin worker path failed:', e.message); }
+  }
 
   // Strategy 1: Try DouParse API (most reliable, works for all platforms)
   try{
