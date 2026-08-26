@@ -805,7 +805,7 @@ var DOUPARSE_API = 'https://scratch.codepku.com/api/parse';
 // 部署方法见 videoparser-worker/README：把该目录 wrangler deploy 后，把你的
 // *.workers.dev 地址填到这里即可（例如 'https://videoparser-sph.xxx.workers.dev'）。
 // Worker 会伪装成 convry.com 去调它的后端，并补上跨域头，让纯静态 PWA 也能直接拿直链。
-var SPH_WORKER_URL = '';
+var SPH_WORKER_URL = 'https://videoparser-sph.onlyvideoget.workers.dev';
 
 // DouParse 1429 限额标志（今日免费额度用完时置位，用于给出明确提示）
 var DP_LIMIT_REACHED = false;
