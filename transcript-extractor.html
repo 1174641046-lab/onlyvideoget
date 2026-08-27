@@ -573,7 +573,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
       </div>
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">本地转写服务器怎么使用？<span class="arrow">&#9660;</span></div>
-        <div class="faq-a">使用步骤：<br>1. 将 <code>transcribe_server.py</code> 和 <code>video-batch-parser-v19.html</code> 放在同一目录<br>2. 双击运行 <code>transcribe_server.py</code>（首次运行会自动安装 faster-whisper、flask 和 imageio-ffmpeg 依赖，并下载 Whisper 模型，约 145MB，需几分钟）<br>3. 服务器启动后，在浏览器打开 <code>http://localhost:8765</code><br>4. 正常使用逐字稿解析，视频上传后自动提取音频并转写<br><br>模型说明：默认使用 base 模型（中文效果好、速度快），可通过 <code>python transcribe_server.py --model small</code> 切换更高精度模型。</div>
+        <div class="faq-a">使用步骤：<br>1. 将 <code>transcribe_server.py</code> 和 <code>video-batch-parser-v25.html</code> 放在同一目录<br>2. 双击运行 <code>transcribe_server.py</code>（首次运行会自动安装 faster-whisper、flask 和 imageio-ffmpeg 依赖，并下载 Whisper 模型，约 145MB，需几分钟）<br>3. 服务器启动后，在浏览器打开 <code>http://localhost:8765</code><br>4. 正常使用逐字稿解析，视频上传后自动提取音频并转写<br><br>模型说明：默认使用 base 模型（中文效果好、速度快），可通过 <code>python transcribe_server.py --model small</code> 切换更高精度模型。</div>
       </div>
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q">为什么不用浏览器内置的语音识别？<span class="arrow">&#9660;</span></div>
