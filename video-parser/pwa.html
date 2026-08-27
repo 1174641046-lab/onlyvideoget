@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230A6CFF' d='M12 16l-5-5h3V4h4v7h3l-5 5zm-7 4v-2h14v2H5z'/></svg>" type="image/svg+xml">
-<title>视频批量解析 - Video Parser V25</title>
-<link rel="manifest" href="./manifest.json">
+<title>视频解析工具 - Video Parser V25</title>
+  <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="theme-color" content="#0A6CFF">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -94,8 +94,7 @@ textarea#links::placeholder{color:#B9BCC1}
 
 /* Results */
 .results-section{margin-top:30px}
-#resultsList{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-#resultsList.single-col{grid-template-columns:1fr}
+#resultsList{display:grid;grid-template-columns:1fr;gap:16px}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:12px}
 .results-header h2{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .results-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -140,7 +139,9 @@ textarea#links::placeholder{color:#B9BCC1}
 .dl-menu-item:hover{background:var(--surface)}
 .dl-menu-item + .dl-menu-item{border-top:.5px solid var(--hair)}
 
-/* 单列/双列 排列切换（网页版可切换，选择会被记住） */
+/* Layout segment hidden (single column enforced) */
+#layoutSegment{display:none !important}
+.results-tools .tool-label:first-child{display:none}
 
 /* Result Card — vertical media card */
 .result-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:0;transition:box-shadow .2s;overflow:hidden;display:flex;flex-direction:column}
@@ -153,7 +154,6 @@ textarea#links::placeholder{color:#B9BCC1}
 .result-card.error .card-media{background:linear-gradient(140deg,#8E8E93,#B9BCC1)}
 .preview-thumb{width:100%;height:100%;overflow:hidden;position:relative;cursor:pointer}
 .preview-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.preview-thumb video.cover-video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
 .preview-thumb .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;background:rgba(255,255,255,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#1E7A4A;font-size:15px;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .preview-thumb .no-thumb{display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.85);font-size:13px;text-align:center;padding:8px;flex-direction:column;gap:6px}
 .preview-thumb .no-thumb .no-thumb-icon{font-size:28px;opacity:.7}
@@ -239,10 +239,6 @@ textarea#links::placeholder{color:#B9BCC1}
 
 /* Responsive */
 @media(max-width:860px){
-#resultsList{grid-template-columns:1fr 1fr}
-#resultsList.single-col{grid-template-columns:1fr}
-}
-@media(max-width:560px){
 #resultsList{grid-template-columns:1fr}
 #resultsList.single-col{grid-template-columns:1fr}
 }
@@ -445,6 +441,12 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 .help-tab code{background:var(--surface);padding:2px 7px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:12px;color:var(--green-deep)}
 .help-tip{margin-top:14px;padding:11px 14px;border-radius:var(--radius-sm);background:var(--green-tint);color:var(--green-deep);font-size:12.5px;font-weight:600;line-height:1.6}
 </style>
+<style>
+/* Split tool: 视频解析模式 — 隐藏逐字稿入口与服务器状态 */
+.btn-transcript{display:none !important;}
+.server-banner{display:none !important;}
+.hero-status-wrap{display:none !important;}
+</style>
 </head>
 <body>
 
@@ -452,7 +454,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
   <div class="header-inner">
     <div class="logo">
       <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></div>
-      <span>视频批量解析 <span class="sub">V25</span></span>
+      <span>视频解析工具 <span class="sub">V25</span></span>
     </div>
     <div class="header-actions">
       <button class="pill-ghost" onclick="openHelp('quick')">使用帮助</button>
@@ -464,9 +466,8 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 <main class="main">
   <div class="hero">
     <div>
-      <h1>视频批量解析</h1>
-      <p>批量提取视频、封面、文案与标签 · 逐字稿本地转写</p>
-      <div class="hero-status-wrap"><span class="server-status offline" id="serverStatusEl"><span class="dot"></span> 正在检测本地转写服务...</span></div>
+      <p>批量提取视频、封面、发布文案与标签</p>
+      <div class="hero-status-wrap"><span class="server-status offline"><span class="dot"></span> 正在检测本地转写服务...</span></div>
     </div>
   </div>
 
@@ -748,15 +749,9 @@ var currentMode = 'batch'; // 'batch' or 'transcript'
 function setResultLayout(n){
   var list = document.getElementById('resultsList');
   if(!list) return;
-  var isSingle = (n === 1);
-  list.classList.toggle('single-col', isSingle);
-  var seg = document.getElementById('layoutSegment');
-  if(seg){
-    var btns = seg.getElementsByTagName('button');
-    if(btns[0]) btns[0].className = isSingle ? 'active' : '';
-    if(btns[1]) btns[1].className = isSingle ? '' : 'active';
-  }
-  try{ localStorage.setItem('vp18_layout', isSingle ? '1' : '2'); }catch(e){}
+  list.classList.toggle('single-col', true);
+  // Dual-column option removed; always single column
+  try{ localStorage.setItem('vp18_layout', '1'); }catch(e){}
 }
 function setNamingRule(v){
   var sel = document.getElementById('namingRule');
@@ -771,8 +766,8 @@ function setNamingRule(v){
 }
 (function restorePrefs(){
   try{
-    var saved = localStorage.getItem('vp18_layout');
-    setResultLayout(saved === '1' ? 1 : 2);
+    // Always single column; dual-column option removed
+    setResultLayout(1);
     var naming = localStorage.getItem('vp18_naming');
     if(naming){ setNamingRule(naming); }
   }catch(e){}
@@ -1549,7 +1544,7 @@ async function parseViaConvryWorker(url){
         platform: 'weixin',
         status: 'success',
         videoUrl: videoUrl,
-        coverUrl: json.coverUrl || '',
+        coverUrl: json.coverUrl ? json.coverUrl.replace(/^http:\/\//i, 'https://') : '',
         desc: json.desc || '',
         author: json.author || '',
         title: json.title || '',
@@ -2011,12 +2006,6 @@ function renderResultCard(result, cardId){
       '<div class="cover-loading">封面加载中...</div>' +
       '<img alt="封面" style="display:none" data-cover-url="' + escapeHtml(result.coverUrl) + '">' +
       (result.videoUrl ? '<div class="play-icon" style="display:none">&#9654;</div>' : '') +
-      '</div>';
-  } else if(result.videoUrl){
-    // 无平台封面时，用视频第一帧当作封面（跨域视频也能显示，无需 CORS）
-    coverHtml = '<div class="preview-thumb" onclick="openVideoModal(\'' + escapeJs(result.videoUrl) + '\', \'\', \'' + escapeJs(titleDisplay) + '\', \'' + escapeJs(authorDisplay) + '\')">' +
-      '<video class="cover-video" preload="metadata" muted playsinline src="' + escapeHtml(result.videoUrl) + '" onloadedmetadata="try{this.currentTime=0.1}catch(e){}"></video>' +
-      '<div class="play-icon">&#9654;</div>' +
       '</div>';
   } else {
     coverHtml = '<div class="preview-thumb"><div class="no-thumb">暂无封面</div></div>';

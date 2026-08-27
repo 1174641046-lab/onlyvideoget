@@ -2,16 +2,10 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230A6CFF' d='M12 16l-5-5h3V4h4v7h3l-5 5zm-7 4v-2h14v2H5z'/></svg>" type="image/svg+xml">
-<title>视频批量解析 - Video Parser V25</title>
-<link rel="manifest" href="./manifest.json">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
-<meta name="theme-color" content="#0A6CFF">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="视频解析">
-<meta name="mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23F5C518' d='M12 16l-5-5h3V4h4v7h3l-5 5zm-7 4v-2h14v2H5z'/></svg>" type="image/svg+xml">
+<title>逐字稿解析工具 - Video Parser V25</title>
+  <link rel="manifest" href="./manifest.json">
 <style>
 /* ============================================================
    VideoParser V19 — iOS Minimal Redesign
@@ -19,10 +13,7 @@
    Secondary : Blue   #0A6CFF
    Accent    : Yellow #F5C518
    ============================================================ */
-*{margin:0;padding:0;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%}
-/* App 模式：禁止双指/双击缩放，防止误触放大 */
-html,body{touch-action:manipulation;-webkit-touch-callout:none;overscroll-behavior:none}
-input,textarea,select,button{-webkit-user-select:text;user-select:text}
+*{margin:0;padding:0;box-sizing:border-box}
 :root{
   --primary:#29A366;--primary-hover:#1E7A4A;
   --blue:#0A6CFF;--blue-deep:#0954B8;--blue-tint:#EAF2FF;
@@ -37,7 +28,7 @@ input,textarea,select,button{-webkit-user-select:text;user-select:text}
   --shadow-md:0 8px 24px rgba(20,40,30,.10);
   --shadow-lg:0 16px 40px rgba(20,40,30,.14);
   --max-width:1120px}
-body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased;padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased}
 a{color:var(--blue);text-decoration:none}
 a:hover{text-decoration:underline}
 
@@ -103,44 +94,10 @@ textarea#links::placeholder{color:#B9BCC1}
 .segment button{border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-secondary);padding:6px 14px;border-radius:9px;transition:all .18s}
 .segment button.active{background:#fff;color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.10)}
 .tool-label{font-size:13px;color:var(--text-muted);font-weight:600;white-space:nowrap}
-/* Floating Action Button (circular green with white border) */
-.batch-download-btn{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:900;width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;border:1.5px solid #fff;display:none;align-items:center;justify-content:center;gap:1px;flex-direction:column;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(41,163,102,.40);font-family:inherit;padding:0}
-.batch-download-btn:hover{background:var(--green-deep);transform:translateY(-2px) scale(1.05)}
-.batch-download-btn.active{display:flex}
+.batch-download-btn{background:var(--green);color:#fff;padding:10px 22px;border-radius:99px;font-size:14px;font-weight:600;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;gap:8px;flex-direction:row;flex-wrap:nowrap;white-space:nowrap;transition:all .2s;box-shadow:0 5px 14px rgba(41,163,102,.30);line-height:1;width:auto;height:auto}
+.batch-download-btn:hover{background:var(--green-deep);transform:translateY(-1px)}
+.batch-download-btn.active{display:inline-flex}
 .batch-download-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
-.batch-download-btn .fab-icon{width:22px;height:22px}
-.batch-download-btn .fab-text{font-size:10px;font-weight:700}
-
-/* Bottom navigation bar */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:.5px solid var(--hair);display:flex;z-index:850;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom);height:calc(56px + env(safe-area-inset-bottom))}
-.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--text-muted);font-size:11px;font-weight:600;transition:color .2s;border:none;background:transparent;font-family:inherit}
-.bottom-nav-item.active{color:var(--green)}
-.bottom-nav-item svg{width:22px;height:22px}
-
-/* Download list view */
-.download-list-view{display:none;padding:20px 20px 80px;max-width:var(--max-width);margin:0 auto}
-.download-list-view.active{display:block}
-.download-list-view h2{font-size:18px;font-weight:800;margin-bottom:16px}
-.dl-item{display:flex;align-items:center;padding:14px 16px;border-radius:var(--radius-sm);background:var(--card);margin-bottom:10px;gap:14px;box-shadow:var(--shadow)}
-.dl-item-thumb{width:48px;height:48px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
-.dl-item-thumb svg{width:24px;height:24px;color:var(--text-muted)}
-.dl-item-thumb img{width:100%;height:100%;object-fit:cover}
-.dl-item-info{flex:1;min-width:0}
-.dl-item-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dl-item-meta{font-size:12px;color:var(--text-muted);margin-top:3px;display:flex;gap:8px}
-.dl-item-menu{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:18px;flex-shrink:0}
-.dl-item-menu:hover{background:var(--surface)}
-.dl-empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
-.dl-empty p{font-size:14px;margin-top:8px}
-
-/* Download menu popup */
-.dl-menu-popup{position:fixed;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:9999;overflow:hidden;display:none;min-width:140px}
-.dl-menu-popup.active{display:block}
-.dl-menu-item{padding:12px 18px;font-size:14px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:10px;border:none;background:transparent;width:100%;font-family:inherit;text-align:left}
-.dl-menu-item:hover{background:var(--surface)}
-.dl-menu-item + .dl-menu-item{border-top:.5px solid var(--hair)}
-
-/* 单列/双列 排列切换（网页版可切换，选择会被记住） */
 
 /* Result Card — vertical media card */
 .result-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:0;transition:box-shadow .2s;overflow:hidden;display:flex;flex-direction:column}
@@ -153,7 +110,6 @@ textarea#links::placeholder{color:#B9BCC1}
 .result-card.error .card-media{background:linear-gradient(140deg,#8E8E93,#B9BCC1)}
 .preview-thumb{width:100%;height:100%;overflow:hidden;position:relative;cursor:pointer}
 .preview-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.preview-thumb video.cover-video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
 .preview-thumb .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;background:rgba(255,255,255,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#1E7A4A;font-size:15px;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .preview-thumb .no-thumb{display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.85);font-size:13px;text-align:center;padding:8px;flex-direction:column;gap:6px}
 .preview-thumb .no-thumb .no-thumb-icon{font-size:28px;opacity:.7}
@@ -239,10 +195,6 @@ textarea#links::placeholder{color:#B9BCC1}
 
 /* Responsive */
 @media(max-width:860px){
-#resultsList{grid-template-columns:1fr 1fr}
-#resultsList.single-col{grid-template-columns:1fr}
-}
-@media(max-width:560px){
 #resultsList{grid-template-columns:1fr}
 #resultsList.single-col{grid-template-columns:1fr}
 }
@@ -262,9 +214,7 @@ textarea#links::placeholder{color:#B9BCC1}
 /* Batch Download Modal */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
 .modal-overlay.active{display:flex}
-.modal{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:420px;width:100%;padding:28px 24px;max-height:90vh;overflow-y:auto;position:relative}
-.modal-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(118,118,128,.12);color:var(--text-secondary);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;padding:0;font-family:inherit}
-.modal-close:hover{background:rgba(118,118,128,.22);color:var(--text)}
+.modal{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:420px;width:100%;padding:28px 24px;max-height:90vh;overflow-y:auto}
 .modal h3{font-size:18px;font-weight:800;margin-bottom:20px;text-align:center}
 .modal-section{margin-bottom:20px}
 .modal-section-title{font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:10px}
@@ -378,10 +328,6 @@ textarea#links::placeholder{color:#B9BCC1}
 .transcribe-progress.failed .label::before{content:'\2717';display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:var(--error);color:#fff;border-radius:50%;font-size:10px;font-weight:bold;flex-shrink:0}
 .dl-btn.dl-local{background:var(--blue);color:#fff}
 .dl-btn.dl-local:hover{background:var(--blue-deep)}
-.dl-btn.dl-redirect{background:var(--green);color:#fff}
-.dl-btn.dl-redirect:hover{background:var(--green-deep,#34A853);transform:translateY(-1px);box-shadow:0 4px 12px rgba(52,168,83,.35)}
-.redirect-row{margin-top:10px;display:flex;gap:8px}
-.result-error-msg{margin-top:10px;font-size:12.5px;line-height:1.7;color:var(--error,#D70015);background:rgba(215,0,21,.06);border-radius:10px;padding:10px 12px;white-space:pre-line}
 
 /* Download Progress Bar */
 .download-progress{margin-top:8px;display:none}
@@ -445,6 +391,10 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 .help-tab code{background:var(--surface);padding:2px 7px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:12px;color:var(--green-deep)}
 .help-tip{margin-top:14px;padding:11px 14px;border-radius:var(--radius-sm);background:var(--green-tint);color:var(--green-deep);font-size:12.5px;font-weight:600;line-height:1.6}
 </style>
+<style>
+/* Split tool: 逐字稿提取模式 — 隐藏批量解析入口 */
+#parseBtn{display:none !important;}
+</style>
 </head>
 <body>
 
@@ -452,7 +402,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
   <div class="header-inner">
     <div class="logo">
       <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></div>
-      <span>视频批量解析 <span class="sub">V25</span></span>
+      <span>逐字稿解析工具 <span class="sub">V25</span></span>
     </div>
     <div class="header-actions">
       <button class="pill-ghost" onclick="openHelp('quick')">使用帮助</button>
@@ -464,9 +414,8 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 <main class="main">
   <div class="hero">
     <div>
-      <h1>视频批量解析</h1>
-      <p>批量提取视频、封面、文案与标签 · 逐字稿本地转写</p>
-      <div class="hero-status-wrap"><span class="server-status offline" id="serverStatusEl"><span class="dot"></span> 正在检测本地转写服务...</span></div>
+      <p>解析视频并自动提取音频、转写为逐字稿文案</p>
+      <div class="hero-status-wrap"><span class="server-status offline"><span class="dot"></span> 正在检测本地转写服务...</span></div>
     </div>
   </div>
 
@@ -520,8 +469,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
           <option value="type_idx_author_title">Video_01_博主_标题</option>
         </select>
         <button class="batch-download-btn" id="batchDownloadBtn" onclick="showBatchDownloadModal()" disabled>
-          <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span class="fab-text">下载</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> 批量下载
         </button>
       </div>
     </div>
@@ -540,40 +488,6 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
   </div>
   <p style="margin-top:8px;font-size:12px">Video Batch Parser</p>
 </footer>
-
-<!-- Bottom Navigation Bar -->
-<nav class="bottom-nav" id="bottomNav">
-  <button class="bottom-nav-item active" onclick="switchView('parse')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
-    <span>视频解析</span>
-  </button>
-  <button class="bottom-nav-item" onclick="switchView('downloads')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    <span>下载列表</span>
-  </button>
-</nav>
-
-<!-- Download List View -->
-<div class="download-list-view" id="downloadListView">
-  <h2>下载列表</h2>
-  <div id="downloadListContainer"></div>
-  <div class="dl-empty" id="downloadListEmpty">
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    <p>暂无下载记录</p>
-  </div>
-</div>
-
-<!-- Download item menu popup -->
-<div class="dl-menu-popup" id="dlMenuPopup">
-  <button class="dl-menu-item" onclick="openDownloadFile()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-    打开文件
-  </button>
-  <button class="dl-menu-item" onclick="showFileLocation()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    查看文件位置
-  </button>
-</div>
 
 <!-- Usage Help Modal -->
 <div class="help-overlay" id="helpModal" onclick="if(event.target===this)closeHelp()">
@@ -605,7 +519,7 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
         <div class="step"><div class="step-num">2</div><h3>粘贴链接</h3><p>将链接粘贴到输入框中，每行一个链接（最多支持20个）</p></div>
         <div class="step"><div class="step-num">3</div><h3>批量下载</h3><p>点击「批量解析」，等待处理完成后下载视频、封面和文案</p></div>
       </div>
-      <h4>V25 新功能</h4>
+      <h4>V19 新功能</h4>
       <ul>
         <li>结果卡片默认<b>双列排列</b>，结果区工具栏「排列」可切换单列/双列（选择会被记住）</li>
         <li>iOS 风命名规则分段控件，替代旧版下拉框</li>
@@ -673,9 +587,8 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
 <div class="toast" id="toast"></div>
 
 <!-- Batch Download Modal -->
-<div class="modal-overlay" id="batchModal" onclick="if(event.target===this)closeBatchModal()">
-  <div class="modal" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeBatchModal()" aria-label="关闭">&times;</button>
+<div class="modal-overlay" id="batchModal">
+  <div class="modal">
     <h3>批量下载</h3>
     <div class="modal-section">
       <div class="modal-section-title">选择资源类型</div>
@@ -688,8 +601,8 @@ textarea#links{background:var(--surface);min-height:120px;padding:15px;border-ra
     <div class="modal-section">
       <div class="modal-section-title">选择下载方式</div>
       <div class="modal-options">
-        <div class="modal-option selected" data-method="direct" onclick="selectBatchMethod('direct')">逐个下载</div>
-        <div class="modal-option" data-method="zip" onclick="selectBatchMethod('zip')">打包 ZIP</div>
+        <div class="modal-option selected" data-method="zip" onclick="selectBatchMethod('zip')">打包 ZIP</div>
+        <div class="modal-option" data-method="direct" onclick="selectBatchMethod('direct')">逐个下载</div>
       </div>
     </div>
     <div class="modal-section">
@@ -742,21 +655,20 @@ python transcribe_server.py</pre>
 <script>
 // ==================== Global State ====================
 var parseResults = [];
-var currentMode = 'batch'; // 'batch' or 'transcript'
+var currentMode = 'transcript'; // split tool: 默认逐字稿模式
 
 // ==================== V18: Layout & Naming Controls ====================
 function setResultLayout(n){
   var list = document.getElementById('resultsList');
   if(!list) return;
-  var isSingle = (n === 1);
-  list.classList.toggle('single-col', isSingle);
+  list.classList.toggle('single-col', n === 1);
   var seg = document.getElementById('layoutSegment');
   if(seg){
     var btns = seg.getElementsByTagName('button');
-    if(btns[0]) btns[0].className = isSingle ? 'active' : '';
-    if(btns[1]) btns[1].className = isSingle ? '' : 'active';
+    btns[0].className = n === 1 ? 'active' : '';
+    btns[1].className = n === 2 ? 'active' : '';
   }
-  try{ localStorage.setItem('vp18_layout', isSingle ? '1' : '2'); }catch(e){}
+  try{ localStorage.setItem('vp18_layout', String(n)); }catch(e){}
 }
 function setNamingRule(v){
   var sel = document.getElementById('namingRule');
@@ -771,8 +683,8 @@ function setNamingRule(v){
 }
 (function restorePrefs(){
   try{
-    var saved = localStorage.getItem('vp18_layout');
-    setResultLayout(saved === '1' ? 1 : 2);
+    var layout = localStorage.getItem('vp18_layout');
+    if(layout === '1' || layout === '2'){ setResultLayout(parseInt(layout, 10)); }
     var naming = localStorage.getItem('vp18_naming');
     if(naming){ setNamingRule(naming); }
   }catch(e){}
@@ -806,15 +718,12 @@ var CORS_POST_PROXIES = [
 // DouParse free API endpoint (supports 9 platforms, no login required)
 var DOUPARSE_API = 'https://scratch.codepku.com/api/parse';
 
-// 视频号解析代理（Cloudflare Worker）。留空则视频号走「跳转外部工具」方案。
-// 部署方法见 videoparser-worker/README：把该目录 wrangler deploy 后，把你的
-// *.workers.dev 地址填到这里即可（例如 'https://videoparser-sph.xxx.workers.dev'）。
-// Worker 会伪装成 convry.com 去调它的后端，并补上跨域头，让纯静态 PWA 也能直接拿直链。
-var SPH_WORKER_URL = 'https://videoparser-sph.onlyvideoget.workers.dev';
-
 // DouParse 1429 限额标志（今日免费额度用完时置位，用于给出明确提示）
 var DP_LIMIT_REACHED = false;
 var DP_LIMIT_TOASTED = false;
+
+// 视频号解析 Worker（自建 Cloudflare Worker，两步法拿直链+文案/标签）
+var SPH_WORKER_URL = 'https://videoparser-sph.onlyvideoget.workers.dev';
 function noteDpLimit(){
   DP_LIMIT_REACHED = true;
   if(!DP_LIMIT_TOASTED){
@@ -850,9 +759,6 @@ async function parseViaDouParseAPI(url){
         return await mapDouParseData(json.data, url);
       }
       if(json.code === 1429){ noteDpLimit(); }
-      if(json.code === 1001 || (json.message && json.message.indexOf('视频号') >= 0)){
-        return { _unsupported: true, message: json.message || '该平台暂不支持网页端解析' };
-      }
     }
   } catch(e){ /* CORS blocked, try proxies */ }
 
@@ -870,9 +776,6 @@ async function parseViaDouParseAPI(url){
           noteDpLimit();
           console.warn('DouParse daily limit reached');
           return null;
-        }
-        if(json.code === 1001 || (json.message && json.message.indexOf('视频号') >= 0)){
-          return { _unsupported: true, message: json.message || '该平台暂不支持网页端解析' };
         }
       }
     } catch(e){
@@ -1049,7 +952,7 @@ function detectPlatform(url){
   if(url.indexOf('bilibili.com') >= 0 || url.indexOf('b23.tv') >= 0) return 'bilibili';
   if(url.indexOf('kuaishou.com') >= 0 || url.indexOf('chenzhongtech.com') >= 0) return 'kuaishou';
   if(url.indexOf('weibo.com') >= 0 || url.indexOf('weibo.cn') >= 0) return 'weibo';
-  if(url.indexOf('weixin.qq.com/sph') >= 0 || url.indexOf('channels.weixin.qq.com') >= 0 || url.indexOf('finder.video.qq.com') >= 0) return 'weixin';
+  if(url.indexOf('weixin.qq.com/sph') >= 0 || url.indexOf('channels.weixin.qq.com') >= 0) return 'weixin';
   if(url.indexOf('tiktok.com') >= 0) return 'tiktok';
   return 'unknown';
 }
@@ -1490,57 +1393,15 @@ function parseGeneric(html, originalUrl){
   return result;
 }
 
-// ==================== Main Parse Function ====================
-// 从 convry 返回的 JSON 里递归找出视频直链（字段名 live_url / play_url / url 等）
-function extractSphVideo(obj, depth){
-  if(!obj || depth > 6) return null;
-  if(typeof obj === 'string'){
-    // 视频号直链通常带这些特征
-    if(/\.(mp4|flv|m3u8)(\?|$)/i.test(obj) || /finder\.video\.qq\.com|vd\.meitudata\.com|tx\.v\.qq\.com|mp\.weixin\.qq\.com\/vweixin\.php/i.test(obj)){
-      return obj;
-    }
-    return null;
-  }
-  if(Array.isArray(obj)){
-    for(var i=0;i<obj.length;i++){
-      var r = extractSphVideo(obj[i], (depth||0)+1);
-      if(r) return r;
-    }
-    return null;
-  }
-  if(typeof obj === 'object'){
-    // 优先读取已知字段
-    var candidates = [obj.live_url, obj.play_url, obj.video_url, obj.url, obj.src, obj.playUrl, obj.videoUrl];
-    for(var k=0;k<candidates.length;k++){
-      if(typeof candidates[k] === 'string' && candidates[k]){
-        var r2 = extractSphVideo(candidates[k], (depth||0)+1);
-        if(r2) return r2;
-      }
-    }
-    for(var key in obj){
-      if(obj.hasOwnProperty(key)){
-        var r3 = extractSphVideo(obj[key], (depth||0)+1);
-        if(r3) return r3;
-      }
-    }
-  }
-  return null;
-}
-
-// 视频号：经自建 Cloudflare Worker v2（多策略解析）
-// Worker 返回格式：{ success:true, videoUrl:"...", title:"..." }
-//            或 { success:false, error:"...", redirectUrl:"..." }
+// ==================== 视频号：经自建 Worker 拿直链 ====================
 async function parseViaConvryWorker(url){
-  if(!SPH_WORKER_URL) return { _debug: 'NO_URL' };
+  if(!SPH_WORKER_URL) return null;
   try{
     var endpoint = SPH_WORKER_URL + (SPH_WORKER_URL.indexOf('?') >= 0 ? '&' : '?') + 'url=' + encodeURIComponent(url);
-    console.log('[SPH] Requesting:', endpoint);
     var resp = await fetchWithTimeout(endpoint, {method:'GET'}, 20000);
-    console.log('[SPH] Response status:', resp.status, resp.ok);
-    if(!resp.ok) return { _debug: 'HTTP_' + resp.status };
+    if(!resp.ok) return null;
     var json = await resp.json();
-    console.log('[SPH] Response body:', JSON.stringify(json).slice(0, 300));
-    if(!json) return { _debug: 'NO_JSON' };
+    if(!json) return null;
 
     // 成功：拿到直链
     if(json.success && json.videoUrl){
@@ -1553,11 +1414,13 @@ async function parseViaConvryWorker(url){
         desc: json.desc || '',
         author: json.author || '',
         title: json.title || '',
-        tags: json.tags || []
+        tags: json.tags || [],
+        parseSource: '视频号直链',
+        _titleFromText: false
       };
     }
 
-    // 失败但有跳转链接：返回 error + redirectUrl，让前端显示跳转按钮
+    // 失败但有跳转链接：返回 error + redirectUrl，前端显示跳转按钮
     if(json.success === false && json.redirectUrl){
       return {
         platform: 'weixin',
@@ -1574,18 +1437,18 @@ async function parseViaConvryWorker(url){
       };
     }
 
-    // 其他情况：返回调试信息
-    return { _debug: 'UNEXPECTED_RESPONSE', _json: JSON.stringify(json).slice(0, 200) };
+    return null;
   }catch(e){
-    console.warn('[SPH] Exception:', e && e.message, e && e.name);
-    return { _debug: 'EXCEPTION:' + (e && e.message) };
+    console.warn('sph worker parse failed:', e && e.message);
+    return null;
   }
 }
 
+// ==================== Main Parse Function ====================
 async function parseSingleLink(url, index, textAuthor, textTitle){
   var platform = detectPlatform(url);
 
-  // 视频号优先走自建 Worker v2（多策略解析：直链优先，失败给跳转链接）
+  // 视频号优先走自建 Worker（直链下载，拿到后自动进入转写流程）
   if(platform === 'weixin'){
     try{
       var cw = await parseViaConvryWorker(url);
@@ -1595,26 +1458,10 @@ async function parseSingleLink(url, index, textAuthor, textTitle){
           if(!cw.author && textAuthor) cw.author = textAuthor;
           if(textTitle && !cw._titleFromText){ cw.title = cleanTitleText(textTitle); cw._titleFromText = true; }
         } else {
-          // error + redirectUrl 的情况也直接返回
           if(textAuthor) cw.author = textAuthor;
           if(textTitle) cw.title = cleanTitleText(textTitle);
         }
         return cw;
-      }
-      // Worker 返回了调试信息（失败），直接展示原因，不再走 DouParse
-      if(cw && cw._debug){
-        return {
-          platform: 'weixin',
-          index: index,
-          status: 'error',
-          originalUrl: url,
-          videoUrl: '',
-          coverUrl: '',
-          desc: '',
-          author: textAuthor || '',
-          title: textTitle ? cleanTitleText(textTitle) : '',
-          error: 'Worker调试:' + cw._debug + (cw._json ? ' | ' + cw._json : '')
-        };
       }
     }catch(e){ console.warn('weixin worker path failed:', e.message); }
   }
@@ -1623,22 +1470,6 @@ async function parseSingleLink(url, index, textAuthor, textTitle){
   try{
     var dpResult = await parseViaDouParseAPI(url);
     if(dpResult){
-      // 视频号等平台 API 明确不支持，返回专属提示
-      if(dpResult._unsupported){
-        return {
-          platform: platform,
-          index: index,
-          status: 'error',
-          originalUrl: url,
-          videoUrl: '',
-          coverUrl: '',
-          desc: '',
-          author: textAuthor || '',
-          title: textTitle ? cleanTitleText(textTitle) : '',
-          redirectUrl: 'https://sph.miuistore.com?sph_url=' + encodeURIComponent(url),
-          error: '视频号仅支持在微信内观看，本站无法直接解析。点击下方绿色按钮，跳转到外部工具下载（链接已自动带上）'
-        };
-      }
       dpResult.platform = platform;
       dpResult.index = index;
       dpResult.status = 'success';
@@ -1692,21 +1523,6 @@ async function parseSingleLink(url, index, textAuthor, textTitle){
   }
   
   // Strategy 3: Return error but pre-fill author from text if available
-  if(platform === 'weixin'){
-    return {
-      platform: platform,
-      index: index,
-      status: 'error',
-      originalUrl: url,
-      videoUrl: '',
-      coverUrl: '',
-      desc: '',
-      author: textAuthor || '',
-      title: textTitle ? cleanTitleText(textTitle) : '',
-      redirectUrl: 'https://sph.miuistore.com?sph_url=' + encodeURIComponent(url),
-      error: '视频号仅支持在微信内观看，本站无法直接解析。点击下方绿色按钮，跳转到外部工具下载（链接已自动带上）'
-    };
-  }
   return {
     platform: platform,
     index: index,
@@ -2012,12 +1828,6 @@ function renderResultCard(result, cardId){
       '<img alt="封面" style="display:none" data-cover-url="' + escapeHtml(result.coverUrl) + '">' +
       (result.videoUrl ? '<div class="play-icon" style="display:none">&#9654;</div>' : '') +
       '</div>';
-  } else if(result.videoUrl){
-    // 无平台封面时，用视频第一帧当作封面（跨域视频也能显示，无需 CORS）
-    coverHtml = '<div class="preview-thumb" onclick="openVideoModal(\'' + escapeJs(result.videoUrl) + '\', \'\', \'' + escapeJs(titleDisplay) + '\', \'' + escapeJs(authorDisplay) + '\')">' +
-      '<video class="cover-video" preload="metadata" muted playsinline src="' + escapeHtml(result.videoUrl) + '" onloadedmetadata="try{this.currentTime=0.1}catch(e){}"></video>' +
-      '<div class="play-icon">&#9654;</div>' +
-      '</div>';
   } else {
     coverHtml = '<div class="preview-thumb"><div class="no-thumb">暂无封面</div></div>';
   }
@@ -2065,12 +1875,6 @@ function renderResultCard(result, cardId){
     redirectHtml = '<div class="redirect-row"><button class="dl-btn dl-redirect" onclick="window.open(\'' + escapeJs(result.redirectUrl) + '\')">跳转下载视频</button></div>';
   }
 
-  // 错误提示
-  var errorHtml = '';
-  if(result.status === 'error' && result.error){
-    errorHtml = '<div class="result-error-msg">' + escapeHtml(result.error) + '</div>';
-  }
-  
   var editFormHtml = '<div class="edit-form" id="editForm-' + idx + '">' +
     '<div class="form-row"><div class="label-line"><label>博主名称</label><button class="copy-field-btn" onclick="copyFieldValue(\'editAuthor-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editAuthor-' + idx + '" value="' + escapeHtml(result.author || '') + '" placeholder="博主名称"></div></div>' +
     '<div class="form-row"><div class="label-line"><label>发布标题</label><button class="copy-field-btn" onclick="copyFieldValue(\'editTitle-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editTitle-' + idx + '" value="' + escapeHtml(result.title || '') + '" placeholder="发布标题"></div></div>' +
@@ -2146,9 +1950,8 @@ function renderResultCard(result, cardId){
     '</div>' +
     descHtml +
     tagsHtml +
-    errorHtml +
-    redirectHtml +
     '<div class="download-row">' + downloadHtml + '</div>' +
+    redirectHtml +
     '<div class="download-progress" id="downloadProgress-' + idx + '">' +
       '<div class="download-progress-track"><div class="download-progress-fill" id="downloadProgressFill-' + idx + '"></div></div>' +
       '<div class="download-progress-text" id="downloadProgressText-' + idx + '"></div>' +
@@ -3015,7 +2818,7 @@ async function downloadSingle(type, idx){
     filename = generateFileName('Video', idx, result.author, result.title, 'mp4', isBatch);
     url = result.videoUrl;
     onProgress(0, '正在下载视频...');
-    await downloadFile(url, filename, onProgress, 'video');
+    await downloadFile(url, filename, onProgress);
     onProgress(100, '视频下载完成');
   } else if(type === 'photo'){
     if(!result.coverUrl){
@@ -3025,7 +2828,7 @@ async function downloadSingle(type, idx){
     filename = generateFileName('Photo', idx, result.author, result.title, 'jpg', isBatch);
     url = result.coverUrl;
     onProgress(0, '正在下载封面...');
-    await downloadFile(url, filename, onProgress, 'photo');
+    await downloadFile(url, filename, onProgress);
     onProgress(100, '封面下载完成');
   } else if(type === 'txt'){
     filename = generateFileName('Txt', idx, result.author, result.title, 'txt', isBatch);
@@ -3041,7 +2844,7 @@ async function downloadSingle(type, idx){
   }, 2000);
 }
 
-async function downloadFile(url, filename, onProgress, mediaType){
+async function downloadFile(url, filename, onProgress){
   onProgress = onProgress || function(){};
   
   // Helper: fetch blob with XMLHttpRequest for progress tracking
@@ -3110,17 +2913,10 @@ async function downloadFile(url, filename, onProgress, mediaType){
     }
   }
   
-  // 所有抓取策略均失败（通常是平台 CDN 不带 CORS 头）。
-  // 移动端（尤其安卓）无法用 blob 直接保存跨域视频，
-  // 改为打开直链 + 复制链接，让用户在浏览器长按「保存视频」或用下载器 App 粘贴。
+  // Fallback: open in new tab with no-referrer
   onProgress(0, '直接下载失败');
-  if(mediaType === 'video'){
-    await openVideoForSave(url, filename);
-  } else {
-    try{ if(navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(url); }catch(e){}
-    window.open(url, '_blank');
-    showToast('链接已复制并打开，请长按保存', 'success', 5000);
-  }
+  showToast('直接下载失败，已打开链接，请右键保存', 'error');
+  window.open(url, '_blank');
 }
 
 async function downloadBlob(blob, filename){
@@ -3133,7 +2929,6 @@ async function downloadBlob(blob, filename){
       var data = await resp.json();
       if(data.ok){
         showToast('已保存: ' + data.filename + '\n保存位置: ' + data.path, 'success', 6000);
-        addDownloadRecord(filename, blob.size || 0, data.path);
         return;
       }
     }
@@ -3150,41 +2945,6 @@ async function downloadBlob(blob, filename){
   document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
   showToast('已下载: ' + filename + '\n请到浏览器默认下载目录查看(通常是"下载"文件夹)', 'success', 5000);
-  addDownloadRecord(filename, blob.size || 0, null);
-}
-
-function isAndroid(){
-  return /Android/i.test(navigator.userAgent);
-}
-
-// 移动端（尤其安卓）无法用 blob 直接保存跨域视频，
-// 最可靠的做法：打开直链 + 复制链接，让用户在浏览器长按「保存视频」或用下载器 App 粘贴。
-async function openVideoForSave(url, filename){
-  // 1) 尽力用带 download 属性的 a 标签触发（部分环境可直接下载）
-  try{
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'video.mp4';
-    a.setAttribute('referrerpolicy', 'no-referrer');
-    a.rel = 'noopener';
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }catch(e){}
-  // 2) 复制直链，方便用下载器 App 粘贴
-  try{
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      await navigator.clipboard.writeText(url);
-    }
-  }catch(e){}
-  // 3) 新标签打开，安卓 Chrome 可长按视频「保存视频」
-  window.open(url, '_blank');
-  if(isAndroid()){
-    showToast('已打开视频并复制链接：在浏览器中「长按视频 → 保存视频」，或把链接粘到下载器 App', 'success', 7000);
-  } else {
-    showToast('已打开视频并复制链接：请右键/长按视频保存', 'success', 6000);
-  }
 }
 
 function formatTextContent(result){
@@ -3204,7 +2964,7 @@ function formatTextContent(result){
 
 // ==================== Batch Download Modal ====================
 var batchDownloadType = 'video';
-var batchDownloadMethod = 'direct';
+var batchDownloadMethod = 'zip';
 
 function showBatchDownloadModal(){
   var successResults = parseResults.filter(function(r){ return r.status === 'success'; });
@@ -3221,7 +2981,7 @@ function showBatchDownloadModal(){
     '共 ' + successResults.length + ' 条结果<br>视频 ' + videoCount + ' 个 | 封面 ' + coverCount + ' 个 | 文案 ' + txtCount + ' 个';
   
   batchDownloadType = 'video';
-  batchDownloadMethod = 'direct';
+  batchDownloadMethod = 'zip';
   
   var typeOpts = document.querySelectorAll('#batchModal .modal-option[data-type]');
   for(var i = 0; i < typeOpts.length; i++){
@@ -3229,7 +2989,7 @@ function showBatchDownloadModal(){
   }
   var methodOpts = document.querySelectorAll('#batchModal .modal-option[data-method]');
   for(var i = 0; i < methodOpts.length; i++){
-    methodOpts[i].classList.toggle('selected', methodOpts[i].getAttribute('data-method') === 'direct');
+    methodOpts[i].classList.toggle('selected', methodOpts[i].getAttribute('data-method') === 'zip');
   }
   
   document.getElementById('batchModalProgress').classList.remove('active');
@@ -3243,13 +3003,6 @@ function showBatchDownloadModal(){
 function closeBatchModal(){
   document.getElementById('batchModal').classList.remove('active');
 }
-
-document.addEventListener('keydown', function(e){
-  if(e.key === 'Escape'){
-    var m = document.getElementById('batchModal');
-    if(m && m.classList.contains('active')) closeBatchModal();
-  }
-});
 
 function selectBatchType(type){
   batchDownloadType = type;
@@ -3346,11 +3099,6 @@ async function batchDownloadZip(results, type, isBatch, startIndex){
         }
       }
     }
-  }
-
-  if(files.length === 0){
-    showToast('没有可打包的文件：视频/封面多为跨域限制，无法抓取，请改用「逐个下载」', 'error', 6000);
-    return;
   }
   
   progressText.textContent = '生成ZIP...';
@@ -3566,74 +3314,23 @@ function updateCharCount(){
 }
 
 async function pasteFromClipboard(){
-  var textarea = document.getElementById('links');
-  if(!textarea) return;
-
-  // 先聚焦输入框：PWA 独立窗口下 document 可能未聚焦，readText 会报 "Document is not focused" 而失败
-  try{ textarea.focus(); }catch(e){}
-  await new Promise(function(r){ setTimeout(r, 50); });
-
-  var hasClipboardAPI = !!(navigator.clipboard && typeof navigator.clipboard.readText === 'function');
-  var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
-
-  // Method 1: 标准 Clipboard API（安卓 Chrome / 桌面有效；iOS 不支持读取）
-  if(hasClipboardAPI){
-    try{
-      var text = await navigator.clipboard.readText();
-      if(text && text.trim()){
-        insertClipboardText(textarea, text.trim());
-        showToast('已粘贴', 'success');
-        return;
-      }
-      showToast('剪贴板为空', 'error');
-      return;
-    } catch(e){
-      console.warn('Clipboard API read failed:', e && e.message);
-      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')){
-        // 权限被拒：查询状态并给出可操作提示
-        try{
-          if(navigator.permissions && navigator.permissions.query){
-            var st = await navigator.permissions.query({name:'clipboard-read'});
-            if(st.state === 'denied'){
-              showToast('剪贴板权限被拒绝：请到浏览器站点设置→权限→剪贴板改为「允许」后重试', 'error', 6000);
-              return;
-            }
-          }
-        }catch(e2){}
-        showToast('剪贴板读取被拒绝，请允许权限后重试', 'error', 5000);
-        return;
-      }
-    }
-  }
-
-  // Method 2: 安卓旧版 execCommand 兜底
   try{
-    textarea.focus();
-    if(document.execCommand){
-      var ok = document.execCommand('paste');
-      if(ok){
-        await new Promise(function(r){ setTimeout(r, 120); });
-        if(textarea.value.trim()){ updateCharCount(); showToast('已粘贴', 'success'); return; }
+    var text = await navigator.clipboard.readText();
+    if(text){
+      var textarea = document.getElementById('links');
+      if(textarea.value.trim()){
+        textarea.value += '\n' + text.trim();
+      } else {
+        textarea.value = text.trim();
       }
+      updateCharCount();
+      showToast('已粘贴', 'success');
+    } else {
+      showToast('剪贴板为空', 'error');
     }
-  }catch(e2){}
-
-  // Method 3: 末路 —— 聚焦并定位光标到末尾，引导用户点输入框触发原生粘贴
-  try{ textarea.focus(); textarea.setSelectionRange(textarea.value.length, textarea.value.length); }catch(e3){}
-  if(isIOS){
-    showToast('苹果系统限制网页读剪贴板，已帮你聚焦输入框：请点一下输入框→在菜单选「粘贴」', 'info', 6000);
-  } else {
-    showToast('已聚焦输入框，请点一下输入框，在弹出菜单选「粘贴」', 'info', 5000);
+  } catch(e){
+    showToast('请手动粘贴（Ctrl+V）', 'error');
   }
-}
-
-function insertClipboardText(textarea, text){
-  if(textarea.value.trim()){
-    textarea.value += '\n' + text;
-  } else {
-    textarea.value = text;
-  }
-  updateCharCount();
 }
 
 function clearInput(){
@@ -3657,156 +3354,6 @@ function toggleFaq(el){
   el.classList.toggle('open');
 }
 
-// ==================== Download History & View Switching ====================
-var downloadHistory = [];
-var currentMenuIndex = -1;
-var currentDlViewItem = null;
-
-function loadDownloadHistory(){
-  try{
-    var raw = localStorage.getItem('vp_download_history');
-    if(raw) downloadHistory = JSON.parse(raw);
-  }catch(e){ downloadHistory = []; }
-}
-
-function saveDownloadHistory(){
-  try{ localStorage.setItem('vp_download_history', JSON.stringify(downloadHistory.slice(-200))); }catch(e){}
-}
-
-function addDownloadRecord(filename, size, path){
-  var record = {
-    id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-    filename: filename,
-    size: size || 0,
-    path: path || null,
-    date: new Date().toISOString()
-  };
-  downloadHistory.unshift(record);
-  if(downloadHistory.length > 200) downloadHistory.pop();
-  saveDownloadHistory();
-}
-
-function formatFileSize(bytes){
-  if(bytes === 0) return '0 B';
-  if(bytes < 1024) return bytes + ' B';
-  if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
-}
-
-function formatDlDate(iso){
-  var d = new Date(iso);
-  var y = d.getFullYear();
-  var m = d.getMonth() + 1;
-  var day = d.getDate();
-  var h = String(d.getHours()).padStart(2, '0');
-  var min = String(d.getMinutes()).padStart(2, '0');
-  return y + '/' + m + '/' + day + ' ' + h + ':' + min;
-}
-
-function getDlIconSvg(type){
-  if(type === 'video' || type === 'Video'){
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-  }
-  if(type === 'photo' || type === 'Photo' || type === 'jpg' || type === 'png' || type === 'webp'){
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
-  }
-  if(type === 'zip'){
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
-  }
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
-}
-
-function detectDlType(filename){
-  var lower = filename.toLowerCase();
-  if(lower.indexOf('video') >= 0 || lower.endsWith('.mp4')) return 'video';
-  if(lower.indexOf('photo') >= 0 || lower.endsWith('.jpg') || lower.endsWith('.png') || lower.endsWith('.webp')) return 'photo';
-  if(lower.endsWith('.zip')) return 'zip';
-  return 'txt';
-}
-
-function renderDownloadList(){
-  var container = document.getElementById('downloadListContainer');
-  var empty = document.getElementById('downloadListEmpty');
-  if(!container) return;
-  if(downloadHistory.length === 0){
-    container.innerHTML = '';
-    if(empty) empty.style.display = 'block';
-    return;
-  }
-  if(empty) empty.style.display = 'none';
-  var html = '';
-  for(var i = 0; i < downloadHistory.length; i++){
-    var item = downloadHistory[i];
-    var type = detectDlType(item.filename);
-    html += '<div class="dl-item">' +
-      '<div class="dl-item-thumb">' + getDlIconSvg(type) + '</div>' +
-      '<div class="dl-item-info">' +
-        '<div class="dl-item-name">' + escapeHtml(item.filename) + '</div>' +
-        '<div class="dl-item-meta">' + formatDlDate(item.date) + (item.size ? ' &middot; ' + formatFileSize(item.size) : '') + '</div>' +
-      '</div>' +
-      '<button class="dl-item-menu" onclick="showDlMenu(' + i + ', event)" title="更多">&#8942;</button>' +
-    '</div>';
-  }
-  container.innerHTML = html;
-}
-
-function switchView(view){
-  var mainEl = document.querySelector('.main');
-  var dlView = document.getElementById('downloadListView');
-  var footerEl = document.querySelector('.footer');
-  var navItems = document.querySelectorAll('.bottom-nav-item');
-  if(view === 'downloads'){
-    if(mainEl) mainEl.style.display = 'none';
-    if(footerEl) footerEl.style.display = 'none';
-    if(dlView) dlView.classList.add('active');
-    renderDownloadList();
-  } else {
-    if(mainEl) mainEl.style.display = '';
-    if(footerEl) footerEl.style.display = '';
-    if(dlView) dlView.classList.remove('active');
-  }
-  navItems.forEach(function(el, i){
-    el.classList.toggle('active', (view === 'parse' && i === 0) || (view === 'downloads' && i === 1));
-  });
-}
-
-function showDlMenu(index, event){
-  currentMenuIndex = index;
-  var popup = document.getElementById('dlMenuPopup');
-  if(!popup) return;
-  var rect = event.currentTarget.getBoundingClientRect();
-  popup.style.top = (rect.top - 4) + 'px';
-  popup.style.right = '16px';
-  popup.classList.add('active');
-  event.stopPropagation();
-}
-
-function openDownloadFile(){
-  var record = downloadHistory[currentMenuIndex];
-  if(!record) return;
-  // Try to open blob URL if cached, otherwise toast
-  showToast('请在浏览器下载目录中打开: ' + record.filename, 'info', 4000);
-  document.getElementById('dlMenuPopup').classList.remove('active');
-}
-
-function showFileLocation(){
-  var record = downloadHistory[currentMenuIndex];
-  if(!record) return;
-  if(record.path){
-    showToast('文件位置: ' + record.path, 'info', 5000);
-  } else {
-    showToast('文件已保存到浏览器默认下载目录（通常是"下载"文件夹）', 'info', 5000);
-  }
-  document.getElementById('dlMenuPopup').classList.remove('active');
-}
-
-document.addEventListener('click', function(e){
-  var popup = document.getElementById('dlMenuPopup');
-  if(popup && !popup.contains(e.target) && !e.target.closest('.dl-item-menu')){
-    popup.classList.remove('active');
-  }
-});
-
 // ==================== Init ====================
 document.getElementById('links').addEventListener('input', updateCharCount);
 document.getElementById('links').addEventListener('keydown', function(e){
@@ -3824,10 +3371,7 @@ document.getElementById('links').addEventListener('keydown', function(e){
 checkServerStatus();
 // Periodically recheck server status every 30 seconds
 setInterval(function(){ checkServerStatus(); }, 30000);
-// Load download history
-loadDownloadHistory();
 </script>
-<!-- PWA Service Worker Registration -->
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
