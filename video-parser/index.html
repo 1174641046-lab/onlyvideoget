@@ -153,6 +153,7 @@ textarea#links::placeholder{color:#B9BCC1}
 .result-card.error .card-media{background:linear-gradient(140deg,#8E8E93,#B9BCC1)}
 .preview-thumb{width:100%;height:100%;overflow:hidden;position:relative;cursor:pointer}
 .preview-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.preview-thumb video.cover-video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
 .preview-thumb .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;background:rgba(255,255,255,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#1E7A4A;font-size:15px;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
 .preview-thumb .no-thumb{display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.85);font-size:13px;text-align:center;padding:8px;flex-direction:column;gap:6px}
 .preview-thumb .no-thumb .no-thumb-icon{font-size:28px;opacity:.7}
@@ -2005,6 +2006,12 @@ function renderResultCard(result, cardId){
       '<div class="cover-loading">封面加载中...</div>' +
       '<img alt="封面" style="display:none" data-cover-url="' + escapeHtml(result.coverUrl) + '">' +
       (result.videoUrl ? '<div class="play-icon" style="display:none">&#9654;</div>' : '') +
+      '</div>';
+  } else if(result.videoUrl){
+    // 无平台封面时，用视频第一帧当作封面（跨域视频也能显示，无需 CORS）
+    coverHtml = '<div class="preview-thumb" onclick="openVideoModal(\'' + escapeJs(result.videoUrl) + '\', \'\', \'' + escapeJs(titleDisplay) + '\', \'' + escapeJs(authorDisplay) + '\')">' +
+      '<video class="cover-video" preload="metadata" muted playsinline src="' + escapeHtml(result.videoUrl) + '" onloadedmetadata="try{this.currentTime=0.1}catch(e){}"></video>' +
+      '<div class="play-icon">&#9654;</div>' +
       '</div>';
   } else {
     coverHtml = '<div class="preview-thumb"><div class="no-thumb">暂无封面</div></div>';
