@@ -1,0 +1,3811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%230A6CFF' d='M12 16l-5-5h3V4h4v7h3l-5 5zm-7 4v-2h14v2H5z'/></svg>" type="image/svg+xml">
+<title>视频解析工具 - Video Parser</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="theme-color" content="#0A6CFF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="视频解析">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+/* ============================================================
+   VideoParser V19 — iOS Minimal Redesign
+   Primary   : Green  #29A366
+   Secondary : Blue   #0A6CFF
+   Accent    : Yellow #F5C518
+   ============================================================ */
+*{margin:0;padding:0;box-sizing:border-box;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* App 模式：禁止双指/双击缩放，防止误触放大 */
+html,body{touch-action:manipulation;-webkit-touch-callout:none;overscroll-behavior:none}
+input,textarea,select,button{-webkit-user-select:text;user-select:text}
+:root{
+  --primary:#29A366;--primary-hover:#1E7A4A;
+  --blue:#0A6CFF;--blue-deep:#0954B8;--blue-tint:#EAF2FF;
+  --green:#29A366;--green-deep:#1E7A4A;--green-tint:#E7F5EE;
+  --yellow:#F5C518;--yellow-deep:#7A5A00;--yellow-tint:#FBF4DC;
+  --bg:#F2F4F6;--surface:#F5F7F8;--card:#FFFFFF;
+  --border:rgba(60,60,67,.12);--hair:rgba(60,60,67,.12);
+  --text:#1C1C1E;--text-secondary:#3A3A3C;--text-muted:#8E8E93;
+  --success:#29A366;--error:#FF3B30;--warning:#C77700;
+  --radius:22px;--radius-mid:15px;--radius-sm:11px;
+  --shadow:0 6px 20px rgba(20,40,30,.06);
+  --shadow-md:0 8px 24px rgba(20,40,30,.10);
+  --shadow-lg:0 16px 40px rgba(20,40,30,.14);
+  --max-width:1120px}
+body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased;padding-bottom:calc(56px + env(safe-area-inset-bottom))}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header */
+.header{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.74);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:.5px solid var(--hair)}
+.header-inner{max-width:var(--max-width);margin:0 auto;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:19px;font-weight:700;letter-spacing:-.3px;display:flex;align-items:center;gap:9px}
+.logo-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#31AF74,#1E7A4A);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(30,122,74,.28);flex-shrink:0}
+.logo-mark svg{width:16px;height:16px;fill:#fff;margin-left:1px}
+.logo .dot{color:var(--text-muted);font-weight:400}
+.version-badge{font-size:11px;font-weight:700;color:#fff;background:var(--green);padding:2px 9px;border-radius:99px;margin-left:2px;letter-spacing:.3px}
+.header-actions{display:flex;align-items:center;gap:10px}
+.lang-badge{font-size:13px;font-weight:600;color:var(--text-secondary);display:flex;align-items:center;gap:4px;cursor:pointer;padding:6px 13px;border-radius:99px;background:rgba(118,118,128,.10);border:none}
+.menu-btn{display:none;font-size:20px;color:var(--text);background:none;border:none;cursor:pointer;padding:4px}
+
+/* Main */
+.main{max-width:var(--max-width);margin:0 auto;padding:28px 20px 64px}
+
+/* Hero */
+.hero{text-align:center;margin-bottom:2px}
+.hero h1{font-size:30px;font-weight:800;margin-bottom:8px;letter-spacing:-.8px}
+.hero p{font-size:15px;color:var(--text-muted)}
+
+/* Input Section */
+.input-section{margin-bottom:22px}
+.input-hint{font-size:13px;color:var(--text-muted);margin-bottom:10px;text-align:center;font-weight:500}
+.input-wrapper{position:relative;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+textarea#links{width:100%;min-height:140px;padding:14px 16px;border:none;border-radius:var(--radius-mid);font-size:15px;font-family:inherit;resize:vertical;transition:box-shadow .2s;background:var(--surface);color:var(--text);line-height:1.7}
+textarea#links:focus{outline:none;background:#fff;box-shadow:0 0 0 2px rgba(41,163,102,.35)}
+textarea#links::placeholder{color:#B9BCC1}
+.char-count{position:absolute;bottom:26px;right:32px;font-size:12px;color:var(--text-muted);background:var(--surface);padding:2px 10px;border-radius:99px}
+
+/* Buttons */
+.btn-group{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:99px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .18s;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--green);color:#fff;justify-content:center;box-shadow:0 4px 12px rgba(30,122,74,.22)}
+.btn-primary:hover{background:var(--green-deep);transform:translateY(-1px);box-shadow:0 6px 14px rgba(30,122,74,.28)}
+.btn-primary:disabled{background:var(--text-muted);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-secondary{background:rgba(118,118,128,.10);color:var(--text-secondary);border:none;padding:9px 16px;font-size:13px}
+.btn-secondary:hover{background:rgba(118,118,128,.18);color:var(--text)}
+.btn-secondary:disabled{opacity:.5;cursor:not-allowed}
+.btn-transcript{background:var(--blue);color:#fff;justify-content:center;box-shadow:0 4px 12px rgba(9,84,184,.20)}
+.btn-transcript:hover{background:var(--blue-deep);transform:translateY(-1px);box-shadow:0 6px 14px rgba(9,84,184,.24)}
+.btn-transcript:active{transform:scale(.97)}
+.btn-transcript:disabled{background:var(--text-muted);cursor:not-allowed;transform:none;box-shadow:none}
+
+/* Progress */
+.progress-bar{margin-top:16px;display:none}
+.progress-bar.active{display:block}
+.progress-track{height:6px;background:rgba(118,118,128,.15);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#29A366,#5BBF8C);border-radius:99px;transition:width .3s;width:0}
+.progress-text{font-size:13px;color:var(--text-muted);margin-top:6px;text-align:center;font-weight:500}
+
+/* Results */
+.results-section{margin-top:30px}
+#resultsList{display:grid;grid-template-columns:1fr;gap:16px}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:12px}
+.results-header h2{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.results-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.segment{display:inline-flex;background:rgba(118,118,128,.12);border-radius:11px;padding:2px;gap:2px}
+.segment button{border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;color:var(--text-secondary);padding:6px 14px;border-radius:9px;transition:all .18s}
+.segment button.active{background:#fff;color:var(--text);box-shadow:0 2px 6px rgba(0,0,0,.10)}
+.tool-label{font-size:13px;color:var(--text-muted);font-weight:600;white-space:nowrap}
+/* Floating Action Button (circular green with white border) */
+.batch-download-btn{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:900;width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;border:1.5px solid #fff;display:none;align-items:center;justify-content:center;gap:1px;flex-direction:column;cursor:pointer;transition:all .2s;box-shadow:0 6px 20px rgba(41,163,102,.40);font-family:inherit;padding:0}
+.batch-download-btn:hover{background:var(--green-deep);transform:translateY(-2px) scale(1.05)}
+.batch-download-btn.active{display:flex}
+.batch-download-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.batch-download-btn .fab-icon{width:22px;height:22px}
+.batch-download-btn .fab-text{font-size:10px;font-weight:700}
+
+/* Bottom navigation bar */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:56px;background:#fff;border-top:.5px solid var(--hair);display:flex;z-index:850;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding-bottom:env(safe-area-inset-bottom);height:calc(56px + env(safe-area-inset-bottom))}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--text-muted);font-size:11px;font-weight:600;transition:color .2s;border:none;background:transparent;font-family:inherit}
+.bottom-nav-item.active{color:var(--green)}
+.bottom-nav-item svg{width:22px;height:22px}
+
+/* Download list view */
+.download-list-view{display:none;padding:20px 20px 80px;max-width:var(--max-width);margin:0 auto}
+.download-list-view.active{display:block}
+.download-list-view h2{font-size:18px;font-weight:800;margin-bottom:16px}
+.dl-item{display:flex;align-items:center;padding:14px 16px;border-radius:var(--radius-sm);background:var(--card);margin-bottom:10px;gap:14px;box-shadow:var(--shadow)}
+.dl-item-thumb{width:48px;height:48px;border-radius:10px;background:var(--surface);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.dl-item-thumb svg{width:24px;height:24px;color:var(--text-muted)}
+.dl-item-thumb img{width:100%;height:100%;object-fit:cover}
+.dl-item-info{flex:1;min-width:0}
+.dl-item-name{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dl-item-meta{font-size:12px;color:var(--text-muted);margin-top:3px;display:flex;gap:8px}
+.dl-item-menu{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);font-size:18px;flex-shrink:0}
+.dl-item-menu:hover{background:var(--surface)}
+.dl-empty{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.dl-empty p{font-size:14px;margin-top:8px}
+
+/* Download menu popup */
+.dl-menu-popup{position:fixed;background:#fff;border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);z-index:9999;overflow:hidden;display:none;min-width:140px}
+.dl-menu-popup.active{display:block}
+.dl-menu-item{padding:12px 18px;font-size:14px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:10px;border:none;background:transparent;width:100%;font-family:inherit;text-align:left}
+.dl-menu-item:hover{background:var(--surface)}
+.dl-menu-item + .dl-menu-item{border-top:.5px solid var(--hair)}
+
+/* Layout segment hidden (single column enforced) */
+#layoutSegment{display:none !important}
+.results-tools .tool-label:first-child{display:none}
+
+/* Result Card — vertical media card */
+.result-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:0;transition:box-shadow .2s;overflow:hidden;display:flex;flex-direction:column}
+.result-card:hover{box-shadow:var(--shadow-md)}
+.result-card.parsing{opacity:.85}
+.result-card.error{box-shadow:0 6px 20px rgba(255,59,48,.08)}
+.card-media{position:relative;aspect-ratio:16/9;background:linear-gradient(140deg,#31AF74,#57B87E);flex-shrink:0}
+.card-media.has-error{background:linear-gradient(140deg,#6B7280,#9CA3AF)}
+.card-media.transcribing{background:linear-gradient(140deg,#0A6CFF,#5AA9FF)}
+.result-card.error .card-media{background:linear-gradient(140deg,#8E8E93,#B9BCC1)}
+.preview-thumb{width:100%;height:100%;overflow:hidden;position:relative;cursor:pointer}
+.preview-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.preview-thumb .play-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:42px;height:42px;background:rgba(255,255,255,.92);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#1E7A4A;font-size:15px;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.preview-thumb .no-thumb{display:flex;align-items:center;justify-content:center;height:100%;color:rgba(255,255,255,.85);font-size:13px;text-align:center;padding:8px;flex-direction:column;gap:6px}
+.preview-thumb .no-thumb .no-thumb-icon{font-size:28px;opacity:.7}
+.preview-thumb .cover-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.10);color:#fff;font-size:12px;z-index:1}
+.card-chip{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.88);backdrop-filter:blur(6px);color:var(--blue-deep);font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;z-index:2}
+.card-index{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;z-index:2}
+.card-content{padding:16px 18px 15px;flex:1;display:flex;flex-direction:column}
+.result-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.result-title{font-size:15.5px;font-weight:700;line-height:1.45;letter-spacing:-.2px;word-break:break-word;flex:1}
+.result-status{font-size:11px;padding:4px 10px;border-radius:99px;font-weight:700;flex-shrink:0;white-space:nowrap}
+.status-parsing{background:var(--yellow-tint);color:var(--yellow-deep)}
+.status-success{background:var(--green-tint);color:var(--green-deep)}
+.status-error{background:#FFECEB;color:#D70015}
+.result-author{display:flex;align-items:center;gap:8px;margin:8px 0 10px;font-size:13px;font-weight:600;color:var(--text-secondary);flex-wrap:wrap}
+.result-platform{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;background:rgba(118,118,128,.10);color:var(--text-secondary)}
+.result-desc{font-size:13px;color:var(--text-secondary);background:var(--surface);padding:10px 12px;border-radius:var(--radius-sm);margin-bottom:10px;word-break:break-word;max-height:110px;overflow-y:auto;white-space:pre-wrap;line-height:1.65}
+.result-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.tag-chip{font-size:12px;font-weight:600;background:var(--yellow-tint);color:var(--yellow-deep);padding:4px 12px;border-radius:99px}
+.tag-more{background:rgba(118,118,128,.10);color:var(--text-muted);font-weight:700}
+
+.download-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:12px;border-top:.5px solid var(--hair);margin-top:auto}
+.dl-btn{font-size:12.5px;padding:8px 15px;border-radius:99px;border:none;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
+.dl-video{background:var(--green-tint);color:var(--green-deep)}
+.dl-video:hover{background:#D5EBE0}
+.dl-photo{background:var(--green-tint);color:var(--green-deep)}
+.dl-photo:hover{background:#D5EBE0}
+.dl-txt{background:var(--blue-tint);color:var(--blue-deep)}
+.dl-txt:hover{background:#D8E6FF}
+.dl-btn:disabled{opacity:.4;cursor:not-allowed}
+.dl-btn .icon{font-size:13px}
+
+.edit-btn{font-size:12.5px;color:var(--text-secondary);background:rgba(118,118,128,.10);border:none;cursor:pointer;padding:8px 15px;border-radius:99px;font-weight:600}
+.edit-btn:hover{background:rgba(118,118,128,.18)}
+
+/* Edit Form */
+.edit-form{display:none;background:var(--surface);padding:14px;border-radius:var(--radius-mid);margin-top:10px}
+.edit-form.active{display:block}
+.edit-form .form-row{margin-bottom:10px}
+.form-row .label-line{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.form-row .label-line label{display:inline-block;font-size:12px;color:var(--text-secondary);font-weight:700;margin-bottom:0}
+.form-row .label-line .copy-field-btn{padding:2px 8px;font-size:11px;background:transparent;border:none;color:var(--text-muted);cursor:pointer;white-space:nowrap;transition:all .2s;border-radius:6px}
+.form-row .label-line .copy-field-btn:hover{color:var(--blue)}
+.edit-form input,.edit-form textarea{width:100%;padding:9px 11px;border:.5px solid var(--hair);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;background:#fff;color:var(--text)}
+.edit-form input:focus,.edit-form textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px rgba(41,163,102,.18)}
+.edit-form textarea{min-height:60px;resize:vertical}
+.field-wrap{display:block;width:100%}
+.edit-form-actions{display:flex;gap:8px;margin-top:8px}
+.edit-form-actions button{padding:8px 18px;border-radius:99px;border:none;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.edit-form-actions .save{background:var(--green);color:#fff}
+.edit-form-actions .cancel{background:rgba(118,118,128,.10);color:var(--text-secondary)}
+
+/* Tutorial Steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.step{text-align:center;padding:20px 12px}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.step h3{font-size:15px;font-weight:700;margin-bottom:6px}
+.step p{font-size:13px;color:var(--text-secondary);line-height:1.5}
+
+/* FAQ Items */
+.faq-item{border-bottom:.5px solid var(--hair);padding:14px 0}
+.faq-item:last-child{border-bottom:none}
+.faq-q{font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.faq-q .arrow{transition:transform .2s;font-size:12px;color:var(--text-muted)}
+.faq-item.open .faq-q .arrow{transform:rotate(180deg)}
+.faq-a{font-size:14px;color:var(--text-secondary);margin-top:8px;display:none;line-height:1.6}
+.faq-item.open .faq-a{display:block}
+
+/* Footer */
+.footer{border-top:.5px solid var(--hair);padding:24px 20px;text-align:center}
+.footer p{font-size:13px;color:var(--text-muted);margin-bottom:4px}
+.footer-links{display:flex;gap:16px;justify-content:center;margin-top:8px}
+.footer-links a{font-size:13px;color:var(--text-secondary)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--text);color:#fff;padding:10px 24px;border-radius:99px;font-size:14px;z-index:9999;opacity:0;transition:all .3s;pointer-events:none;box-shadow:var(--shadow-lg)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{background:var(--error)}
+.toast.success{background:var(--green-deep)}
+
+/* Loading spinner */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Responsive */
+@media(max-width:860px){
+#resultsList{grid-template-columns:1fr}
+#resultsList.single-col{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+.hero h1{font-size:24px}
+.hero p{font-size:14px}
+.main{padding:20px 16px 48px}
+.steps{grid-template-columns:1fr;gap:8px}
+.step{padding:12px}
+.btn-group{flex-direction:column}
+.btn{width:100%;justify-content:center}
+.result-card{padding:0}
+.menu-btn{display:block}
+.header-actions .lang-badge{display:none}
+}
+
+/* Batch Download Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-overlay.active{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:420px;width:100%;padding:28px 24px;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(118,118,128,.12);color:var(--text-secondary);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .18s;padding:0;font-family:inherit}
+.modal-close:hover{background:rgba(118,118,128,.22);color:var(--text)}
+.modal h3{font-size:18px;font-weight:800;margin-bottom:20px;text-align:center}
+.modal-section{margin-bottom:20px}
+.modal-section-title{font-size:13px;font-weight:700;color:var(--text-secondary);margin-bottom:10px}
+.modal-options{display:flex;gap:8px;flex-wrap:wrap}
+.modal-option{flex:1;min-width:80px;padding:12px 8px;border:1.5px solid var(--hair);border-radius:var(--radius-mid);font-size:14px;font-weight:600;cursor:pointer;text-align:center;transition:all .18s;background:var(--surface);user-select:none}
+.modal-option:hover{border-color:var(--text-muted)}
+.modal-option.selected{border-color:var(--green);background:var(--green-tint);color:var(--green-deep)}
+.modal-stats{font-size:13px;color:var(--text-muted);text-align:center;margin-bottom:16px;line-height:1.6}
+.modal-progress{display:none;margin-top:16px}
+.modal-progress.active{display:block}
+.modal-progress .progress-track{height:6px;background:rgba(118,118,128,.15);border-radius:99px;overflow:hidden}
+.modal-progress .progress-fill{height:100%;background:var(--green);border-radius:99px;transition:width .3s;width:0}
+.modal-progress-text{font-size:13px;color:var(--text-secondary);margin-top:6px;text-align:center}
+.modal-actions{display:flex;gap:12px}
+.modal-actions .btn{flex:1;justify-content:center;min-width:auto}
+
+/* Start Index Input */
+.modal-section-inline{display:flex;align-items:center;gap:10px;margin-top:4px}
+.modal-section-inline label{font-size:14px;color:var(--text-secondary);white-space:nowrap}
+.modal-section-inline input{width:80px;padding:8px 10px;border:1.5px solid var(--hair);border-radius:var(--radius-sm);font-size:15px;font-weight:600;text-align:center;font-family:inherit;color:var(--text);background:#fff}
+.modal-section-inline input:focus{outline:none;border-color:var(--green)}
+
+/* Server Help Modal */
+.server-help-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);z-index:3000;display:none;align-items:center;justify-content:center;padding:20px}
+.server-help-overlay.active{display:flex}
+.server-help-modal{background:var(--card);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.3);max-width:520px;width:100%;padding:32px 28px;position:relative}
+.server-help-modal h3{font-size:18px;font-weight:800;margin-bottom:8px;text-align:center;color:var(--text)}
+.server-help-modal .subtitle{font-size:13px;color:var(--text-secondary);text-align:center;margin-bottom:24px}
+.server-help-modal .cmd-box{background:#1C1C1E;border-radius:var(--radius-mid);padding:16px;margin-bottom:20px;position:relative}
+.server-help-modal .cmd-box pre{color:#E5E5EA;font-family:Consolas,Monaco,Courier New,monospace;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-all;margin:0;max-height:120px;overflow-y:auto}
+.server-help-modal .cmd-box .copy-btn{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.12);border:none;color:#fff;padding:4px 12px;border-radius:99px;font-size:12px;cursor:pointer;transition:background .2s}
+.server-help-modal .cmd-box .copy-btn:hover{background:rgba(255,255,255,.22)}
+.server-help-modal .cmd-box .copy-btn.copied{background:var(--green)}
+.server-help-modal .actions{display:flex;gap:12px;margin-top:20px}
+.server-help-modal .actions .btn{flex:1;justify-content:center;min-width:auto;font-size:14px}
+.server-help-modal .actions .btn-secondary{background:rgba(118,118,128,.10);color:var(--text);border:none}
+.server-help-modal .actions .btn-secondary:hover{background:rgba(118,118,128,.18)}
+.server-help-modal .tip{font-size:12px;color:var(--text-muted);margin-top:16px;text-align:center;line-height:1.5}
+.server-help-modal .tip code{background:var(--surface);padding:2px 6px;border-radius:6px;font-family:monospace;font-size:11px}
+
+/* Video Preview Modal */
+.video-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}
+.video-modal-overlay.active{display:flex}
+.video-modal{background:#000;border-radius:var(--radius-mid);box-shadow:0 20px 60px rgba(0,0,0,.5);max-width:90vw;max-height:90vh;overflow:hidden;position:relative}
+.video-modal video{max-width:90vw;max-height:80vh;display:block;border-radius:var(--radius-mid)}
+.video-modal-close{position:absolute;top:-40px;right:0;width:32px;height:32px;background:rgba(255,255,255,.2);border-radius:50%;border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.video-modal-close:hover{background:rgba(255,255,255,.4)}
+.video-modal-info{padding:12px 16px;background:rgba(0,0,0,.8);color:#fff;font-size:13px;text-align:center}
+
+/* Collapsible Sections */
+.collapsible-section{margin-top:40px;border:none;border-radius:var(--radius);overflow:hidden;transition:all .3s;background:var(--card);box-shadow:var(--shadow)}
+.collapsible-section.collapsed{box-shadow:none;background:transparent}
+.collapsible-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:16px 20px;background:var(--card);user-select:none;transition:background .2s}
+.collapsible-header:hover{background:var(--surface)}
+.collapsible-header h2{font-size:17px;font-weight:700}
+.collapsible-arrow{font-size:14px;color:var(--text-muted);transition:transform .3s;flex-shrink:0}
+.collapsible-section.collapsed .collapsible-arrow{transform:rotate(-90deg)}
+.collapsible-body{max-height:2000px;overflow:hidden;transition:max-height .4s ease,padding .3s,opacity .3s;opacity:1;padding:6px 20px 20px}
+.collapsible-section.collapsed .collapsible-body{max-height:0;padding-top:0;padding-bottom:0;opacity:0}
+
+/* Transcript Mode Card */
+.result-card.transcript-mode{box-shadow:var(--shadow),0 0 0 1.5px rgba(10,108,255,.25)}
+
+/* Audio Extract Section */
+.transcript-section{margin-top:12px;padding:13px;background:var(--blue-tint);border-radius:var(--radius-mid);border:none}
+.transcript-section-title{font-size:13px;font-weight:700;color:var(--blue-deep);margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.audio-extract-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dl-audio{background:var(--blue);color:#fff}
+.dl-audio:hover{background:var(--blue-deep)}
+.dl-transcript{background:#fff;color:var(--blue-deep)}
+.dl-transcript:hover{background:#D8E6FF}
+.dl-copy{background:#fff;color:var(--blue-deep)}
+.dl-copy:hover{background:#D8E6FF}
+.audio-progress{margin-top:8px;display:none}
+.audio-progress.active{display:block}
+.audio-progress-track{height:5px;background:rgba(10,108,255,.18);border-radius:99px;overflow:hidden}
+.audio-progress-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .3s;width:0}
+.audio-progress-text{font-size:12px;color:var(--blue-deep);margin-top:4px}
+
+/* Transcript Textarea */
+.transcript-input-area{margin-top:10px}
+.transcript-input-area label{font-size:12px;color:var(--text-secondary);font-weight:700;display:block;margin-bottom:4px}
+.transcript-textarea{width:100%;min-height:80px;padding:9px 11px;border:.5px solid var(--hair);border-radius:var(--radius-sm);font-size:13px;font-family:inherit;background:#fff;color:var(--text);resize:vertical;line-height:1.5}
+.transcript-textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 2px rgba(10,108,255,.15)}
+.transcript-hint{font-size:11px;color:var(--text-muted);margin-top:4px}
+.transcript-hint a{color:var(--blue)}
+
+/* Local Transcription Server Status */
+.server-status{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:99px;font-size:12px;font-weight:600;border:none;background:rgba(118,118,128,.10);transition:all .3s}
+.server-status.online{color:var(--green-deep);background:var(--green-tint)}
+.server-status.offline{color:var(--text-muted)}
+.server-status .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.server-status.online .dot{background:var(--green);animation:pulse 2s infinite}
+.server-status.offline .dot{background:var(--text-muted)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.server-banner{margin:0 0 4px;padding:5px 16px;border-radius:var(--radius-mid);font-size:13px;display:flex;align-items:center;gap:8px}
+.server-banner.online{background:var(--green-tint);color:var(--green-deep)}
+.server-banner.offline{background:var(--yellow-tint);color:var(--yellow-deep)}
+.server-banner a{color:var(--blue);font-weight:600;text-decoration:underline;cursor:pointer}
+
+/* Auto Transcribe Progress */
+.transcribe-progress{margin-top:8px;padding:9px 13px;border-radius:var(--radius-sm);background:#fff;border:.5px solid var(--hair);font-size:12px;color:var(--text-secondary);display:none}
+.transcribe-progress.active{display:block}
+.transcribe-progress .label{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.transcribe-progress .label .spinner{width:14px;height:14px}
+.transcribe-progress.completed{background:var(--green-tint);border-color:transparent;color:var(--green-deep)}
+.transcribe-progress.failed{background:#FFECEB;border-color:transparent;color:#D70015}
+.transcribe-progress.completed .spinner{display:none}
+.transcribe-progress.completed .label::before{content:'\2713';display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:var(--green);color:#fff;border-radius:50%;font-size:11px;font-weight:bold;flex-shrink:0}
+.transcribe-progress.failed .spinner{display:none}
+.transcribe-progress.failed .label::before{content:'\2717';display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:var(--error);color:#fff;border-radius:50%;font-size:10px;font-weight:bold;flex-shrink:0}
+.dl-btn.dl-local{background:var(--blue);color:#fff}
+.dl-btn.dl-local:hover{background:var(--blue-deep)}
+.dl-btn.dl-redirect{background:var(--green);color:#fff}
+.dl-btn.dl-redirect:hover{background:var(--green-deep,#34A853);transform:translateY(-1px);box-shadow:0 4px 12px rgba(52,168,83,.35)}
+.redirect-row{margin-top:10px;display:flex;gap:8px}
+.result-error-msg{margin-top:10px;font-size:12.5px;line-height:1.7;color:var(--error,#D70015);background:rgba(215,0,21,.06);border-radius:10px;padding:10px 12px;white-space:pre-line}
+
+/* Download Progress Bar */
+.download-progress{margin-top:8px;display:none}
+.download-progress.active{display:block}
+.download-progress-track{height:4px;background:rgba(118,118,128,.15);border-radius:99px;overflow:hidden}
+.download-progress-fill{height:100%;background:var(--green);border-radius:99px;transition:width .3s;width:0}
+.download-progress-text{font-size:12px;color:var(--text-secondary);margin-top:4px}
+
+/* Retry Button for Failed Transcription */
+.retry-btn{background:var(--error);color:#fff;padding:7px 16px;border-radius:99px;border:none;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;display:inline-flex;align-items:center;gap:4px;transition:all .2s;font-family:inherit}
+.retry-btn:hover{background:#D70015;transform:translateY(-1px)}
+
+/* ============ V18 mockup-faithful additions ============ */
+.logo .sub{font-size:13px;font-weight:500;color:var(--text-muted);margin-left:4px}
+.pill-ghost{border:none;background:rgba(118,118,128,.10);color:var(--text-secondary);font-size:13px;font-weight:600;padding:7px 14px;border-radius:99px;cursor:pointer;font-family:inherit;transition:background .18s}
+.pill-ghost:hover{background:rgba(118,118,128,.18)}
+
+/* Hero - left aligned like mockup */
+.hero{text-align:left;padding:6px 4px 22px}
+.hero h1{font-size:32px;font-weight:800;letter-spacing:-.8px;margin-bottom:0}
+.hero p{font-size:15px;color:var(--text-muted);margin-top:8px;line-height:1.6}
+.hero-status-wrap{margin-top:10px}
+
+/* Server status chip (mockup status-chip) */
+.server-status{padding:7px 15px;font-size:13px;font-weight:600}
+.server-status.online .dot{box-shadow:0 0 0 3px rgba(41,163,102,.22)}
+.server-banner{margin:0 0 4px;font-weight:500}
+
+/* Input card (mockup .card) */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:22px}
+.card-label{font-size:13px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;margin-bottom:13px}
+textarea#links{background:var(--surface);min-height:120px;padding:15px;border-radius:var(--radius-mid);border:none}
+.hint-row{display:flex;justify-content:space-between;align-items:center;margin:12px 4px 0;font-size:13px;color:var(--text-muted);flex-wrap:wrap;gap:8px}
+.platform-dots{display:flex;gap:6px;flex-wrap:wrap}
+.plat-dot{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:rgba(118,118,128,.10);color:var(--text-secondary)}
+.hint-count{font-weight:600}
+.btn svg{width:17px;height:17px;fill:currentColor;flex-shrink:0}
+.btn-text{background:rgba(118,118,128,.10);color:var(--text-secondary)}
+.btn-text:hover{background:rgba(118,118,128,.18);color:var(--text)}
+
+/* Results header count badge */
+.results-header h2{display:flex;align-items:center;gap:10px}
+.count-badge{font-size:12px;font-weight:700;color:var(--green-deep);background:var(--green-tint);padding:4px 10px;border-radius:99px}
+
+/* Author row with avatar (mockup) */
+.result-author .avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#0A6CFF,#5AA9FF);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.result-author .author-name{font-size:13px;font-weight:600;color:var(--text-secondary)}
+
+/* Help modal */
+.help-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:3500;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.help-overlay.active{display:flex}
+.help-modal{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-width:640px;width:100%;max-height:86vh;overflow-y:auto;padding:26px 26px 22px;position:relative}
+.help-modal h3{font-size:19px;font-weight:800;letter-spacing:-.3px}
+.help-close{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(118,118,128,.12);color:var(--text-secondary);font-size:16px;cursor:pointer;line-height:1;font-family:inherit}
+.help-close:hover{background:rgba(118,118,128,.2)}
+.help-tabs{margin:16px 0 14px}
+.help-tab h4{font-size:14px;font-weight:800;margin:18px 0 8px;color:var(--text)}
+.help-tab h4:first-child{margin-top:4px}
+.help-tab p,.help-tab li{font-size:13.5px;color:var(--text-secondary);line-height:1.75}
+.help-tab ul{padding-left:18px;margin:6px 0}
+.help-tab code{background:var(--surface);padding:2px 7px;border-radius:6px;font-family:Consolas,Monaco,monospace;font-size:12px;color:var(--green-deep)}
+.help-tip{margin-top:14px;padding:11px 14px;border-radius:var(--radius-sm);background:var(--green-tint);color:var(--green-deep);font-size:12.5px;font-weight:600;line-height:1.6}
+</style>
+<style>
+/* Split tool: 视频解析模式 — 隐藏逐字稿入口与服务器状态 */
+.btn-transcript{display:none !important;}
+.server-banner{display:none !important;}
+.hero-status-wrap{display:none !important;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></svg></div>
+      <span>视频解析工具 <span class="sub">V25</span></span>
+    </div>
+    <div class="header-actions">
+      <button class="pill-ghost" onclick="openHelp('quick')">使用帮助</button>
+      <button class="menu-btn">&#9776;</button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="hero">
+    <div>
+      <p>批量提取视频、封面、发布文案与标签</p>
+      <div class="hero-status-wrap"><span class="server-status offline"><span class="dot"></span> 正在检测本地转写服务...</span></div>
+    </div>
+  </div>
+
+  <div class="server-banner offline" id="serverBanner">
+    <span>&#9888;</span> 正在检测本地转写服务...
+  </div>
+
+  <div class="card">
+    <div class="card-label">输入链接</div>
+    <textarea id="links" placeholder="粘贴视频链接，每行一个（最多 20 个）&#10;支持小红书 / 抖音 / B站 / 快手 / 微博 / 视频号，可直接粘贴分享文本自动提取博主名"></textarea>
+    <div class="hint-row">
+      <div class="platform-dots">
+        <span class="plat-dot">小红书</span><span class="plat-dot">抖音</span><span class="plat-dot">B站</span><span class="plat-dot">快手</span><span class="plat-dot">微博</span><span class="plat-dot">视频号</span>
+      </div>
+      <span class="hint-count" id="charCount">0 条链接</span>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="parseBtn" onclick="batchParse()">
+        <svg viewBox="0 0 24 24"><path d="M12 3v10.55l4-4L17.55 11 12 16.55 6.45 11 8 9.45l4 4V3zM5 19v-2h14v2z"/></svg>
+        <span id="parseBtnText">批量解析</span>
+      </button>
+      <button class="btn btn-transcript" id="transcriptBtn" onclick="batchTranscript()">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 13h-2v2h-2v-2H7v-2h2v-2h2v2h2zm-1-7V3.5L18.5 9z"/></svg>
+        <span id="transcriptBtnText">逐字稿解析</span>
+      </button>
+      <button class="btn btn-text" onclick="pasteFromClipboard()">粘贴</button>
+      <button class="btn btn-text" onclick="clearInput()">清除</button>
+    </div>
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">准备中...</div>
+    </div>
+  </div>
+
+  <div class="results-section" id="resultsSection" style="display:none">
+    <div class="results-header">
+      <h2>解析结果 <span class="count-badge" id="resultCount" style="display:none"></span></h2>
+      <div class="results-tools">
+        <span class="tool-label">排列</span>
+        <div class="segment" id="layoutSegment">
+          <button onclick="setResultLayout(1)">单列</button>
+          <button class="active" onclick="setResultLayout(2)">双列</button>
+        </div>
+        <span class="tool-label">命名规则</span>
+        <div class="segment" id="namingSegment">
+          <button class="active" onclick="setNamingRule('author_type_idx')">博主_Video_01</button>
+          <button onclick="setNamingRule('type_idx_author_title')">Video_01_博主_标题</button>
+        </div>
+        <select id="namingRule" style="display:none">
+          <option value="author_type_idx">博主_Video_01</option>
+          <option value="type_idx_author_title">Video_01_博主_标题</option>
+        </select>
+        <button class="batch-download-btn" id="batchDownloadBtn" onclick="showBatchDownloadModal()" disabled>
+          <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span class="fab-text">下载</span>
+        </button>
+      </div>
+    </div>
+    <div id="resultsList"></div>
+  </div>
+
+  </main>
+
+<footer class="footer">
+  <p>视频版权归相关网站及作者所有，本站不提供和存储任何视频及图片</p>
+  <div class="footer-links">
+    <a href="javascript:void(0)">服务条款</a>
+    <a href="javascript:void(0)">隐私政策</a>
+    <a href="javascript:void(0)">联系我们</a>
+    <a href="javascript:void(0)">意见反馈</a>
+  </div>
+  <p style="margin-top:8px;font-size:12px">Video Batch Parser</p>
+</footer>
+
+<!-- Bottom Navigation Bar -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-item active" onclick="switchView('parse')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+    <span>视频解析</span>
+  </button>
+  <button class="bottom-nav-item" onclick="switchView('downloads')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <span>下载列表</span>
+  </button>
+</nav>
+
+<!-- Download List View -->
+<div class="download-list-view" id="downloadListView">
+  <h2>下载列表</h2>
+  <div id="downloadListContainer"></div>
+  <div class="dl-empty" id="downloadListEmpty">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    <p>暂无下载记录</p>
+  </div>
+</div>
+
+<!-- Download item menu popup -->
+<div class="dl-menu-popup" id="dlMenuPopup">
+  <button class="dl-menu-item" onclick="openDownloadFile()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    打开文件
+  </button>
+  <button class="dl-menu-item" onclick="showFileLocation()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+    查看文件位置
+  </button>
+</div>
+
+<!-- Usage Help Modal -->
+<div class="help-overlay" id="helpModal" onclick="if(event.target===this)closeHelp()">
+  <div class="help-modal">
+    <button class="help-close" onclick="closeHelp()">&times;</button>
+    <h3>使用帮助</h3>
+    <div class="segment help-tabs">
+      <button class="active" id="helpTabBtn-quick" onclick="switchHelpTab('quick')">快速上手</button>
+      <button id="helpTabBtn-guide" onclick="switchHelpTab('guide')">逐字稿与服务器</button>
+      <button id="helpTabBtn-faq" onclick="switchHelpTab('faq')">常见问题</button>
+    </div>
+
+    <div class="help-tab" id="helpTab-quick">
+      <h4>只用批量解析（无需服务器）</h4>
+      <ul>
+        <li>双击打开本页面，粘贴视频链接（每行一个，最多 20 个）</li>
+        <li>点击绿色「批量解析」，自动提取视频、封面、文案、标签</li>
+      </ul>
+      <h4>要用逐字稿（需要本地服务器）</h4>
+      <ul>
+        <li>双击 <code>start-videoparser.bat</code> → 模型加载后浏览器自动打开页面</li>
+        <li>粘贴链接，点蓝色「逐字稿解析」→ 解析完成后点「提取并转写」</li>
+        <li>转写结果自动填入文本框，可编辑后下载 TXT</li>
+      </ul>
+      <div class="help-tip">服务器已在运行时再次双击 bat 不会重复启动，只打开页面；黑色窗口保持打开表示服务存活，关闭窗口 = 停止服务。</div>
+      <h4>三步流程</h4>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><h3>收集链接</h3><p>从小红书、抖音、B站等平台复制视频或图文的分享链接</p></div>
+        <div class="step"><div class="step-num">2</div><h3>粘贴链接</h3><p>将链接粘贴到输入框中，每行一个链接（最多支持20个）</p></div>
+        <div class="step"><div class="step-num">3</div><h3>批量下载</h3><p>点击「批量解析」，等待处理完成后下载视频、封面和文案</p></div>
+      </div>
+      <h4>V25 新功能</h4>
+      <ul>
+        <li>结果卡片默认<b>双列排列</b>，结果区工具栏「排列」可切换单列/双列（选择会被记住）</li>
+        <li>iOS 风命名规则分段控件，替代旧版下拉框</li>
+        <li>标签以黄色胶囊 chips 独立展示；封面左上角显示解析来源（DouParse / 本地解析）</li>
+        <li>颜色语义：绿 = 解析/下载主流程，蓝 = 逐字稿/转写，黄 = 标签</li>
+      </ul>
+    </div>
+
+    <div class="help-tab" id="helpTab-guide" style="display:none">
+      <h4>启动方式</h4>
+      <ul>
+        <li><b>一键启动</b>：双击 <code>start-videoparser.bat</code>（自动预加载模型 + 自动打开浏览器）</li>
+        <li><b>开机常驻（懒加载）</b>：启动文件夹（Win+R → <code>shell:startup</code>）里的 <code>videoparser-autostart.bat</code> 开机后静默启动服务器，约 84MB 内存、CPU 零占用；首次转写时才加载模型（多等几秒）</li>
+        <li><b>停止服务</b>：双击 <code>stop-server.bat</code>；取消开机自启：删除启动文件夹里的 <code>videoparser-autostart.bat</code></li>
+      </ul>
+      <h4>首次运行须知</h4>
+      <ul>
+        <li>首次启动 <code>transcribe_server.py</code> 会自动安装依赖（faster-whisper、flask、imageio-ffmpeg）并下载 Whisper base 模型（约 145MB），需几分钟</li>
+        <li>更高转写精度：<code>python transcribe_server.py --model small</code></li>
+        <li>其他参数：<code>--port 8765</code> 改端口；<code>--no-browser</code> 启动后不弹浏览器</li>
+      </ul>
+      <h4>逐字稿工作原理</h4>
+      <p>点击「提取并转写」后自动完成：下载视频 → 上传到本地服务器 → FFmpeg 提取音频 → Whisper 转写 → 结果填入文本框 → 一键下载 TXT。全程本地完成，隐私安全。</p>
+      <h4>手机端（PWA）</h4>
+      <p>手机与电脑同一 WiFi，浏览器访问 <code>http://&lt;电脑IP&gt;:8765</code>（电脑上先运行 bat 启动服务器），可添加到主屏幕当 App 使用。</p>
+    </div>
+
+    <div class="help-tab" id="helpTab-faq" style="display:none">
+<div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">一次最多可以解析多少个链接？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">一次最多支持20个链接。如果输入超过20个，系统会自动截取前20个进行解析。</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">为什么有些链接解析失败了？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">可能原因：1) 链接已失效或被删除；2) 平台反爬限制；3) 网络问题。解析失败时可以点击"编辑/复制"自行填写信息后下载。本工具会依次尝试 DouParse API 和 HTML 代理解析两种方式，最大化解析成功率。</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">文件命名规则是什么？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">命名规则可在输入区域下拉切换：<br><br><b>规则1 - 博主_Video_序号</b>：博主名称_Video_01 / 博主名称_Photo_01 / 博主名称_Txt_01<br><b>规则2 - Video_序号_博主_标题</b>：Video_01_博主名称_视频标题 / Photo_01_博主名称_视频标题 / Txt_01_博主名称_视频标题<br><br><b>逐字稿（Transcript）固定为：博主名称_视频标题</b><br><br>单个下载时不加序号（规则1：博主_Video / 规则2：Video_博主_标题）。批量下载时可自定义起始序号（如从3开始编号），可选择视频/封面/文案其中一种类型，下载方式可选打包ZIP或逐个下载。</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">支持哪些平台？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">当前支持小红书、抖音、B站、快手、微博、视频号等主流平台的视频和图文链接解析。</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">批量解析是免费的吗？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">本工具完全免费，所有解析和下载功能均在浏览器本地完成，不收集任何数据。解析引擎优先调用免费开源的 DouParse API（支持9大平台），失败时自动回退到 HTML 代理解析。</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">逐字稿解析是怎么工作的？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">V12 采用后端视频音频分离方案：先运行同目录下的 <code>transcribe_server.py</code> 启动本地转写服务器，然后在浏览器中打开本工具。逐字稿解析会自动完成：1) 下载视频 → 2) 上传视频到本地服务器 → 3) 服务器用 FFmpeg 提取音频轨道 → 4) Whisper 模型自动转写 → 5) 结果自动填入文本框 → 6) 一键下载 TXT。全程无需手动操作，音频提取完全在后端完成，彻底解决了浏览器 AudioContext 静音问题。</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">本地转写服务器怎么使用？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">使用步骤：<br>1. 将 <code>transcribe_server.py</code> 和 <code>video-batch-parser-v19.html</code> 放在同一目录<br>2. 双击运行 <code>transcribe_server.py</code>（首次运行会自动安装 faster-whisper、flask 和 imageio-ffmpeg 依赖，并下载 Whisper 模型，约 145MB，需几分钟）<br>3. 服务器启动后，在浏览器打开 <code>http://localhost:8765</code><br>4. 正常使用逐字稿解析，视频上传后自动提取音频并转写<br><br>模型说明：默认使用 base 模型（中文效果好、速度快），可通过 <code>python transcribe_server.py --model small</code> 切换更高精度模型。</div>
+      </div>
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">为什么不用浏览器内置的语音识别？<span class="arrow">&#9660;</span></div>
+        <div class="faq-a">之前的版本（V7-V11）在浏览器内用 AudioContext + MediaRecorder 提取音频，存在 AudioContext 被 suspended 导致静音的问题。V12 改为后端 FFmpeg 直接分离视频音频轨道，完全绕过浏览器音频 API 限制，音频提取100%可靠。转写仍使用本地 Whisper 模型，隐私安全。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Batch Download Modal -->
+<div class="modal-overlay" id="batchModal" onclick="if(event.target===this)closeBatchModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeBatchModal()" aria-label="关闭">&times;</button>
+    <h3>批量下载</h3>
+    <div class="modal-section">
+      <div class="modal-section-title">选择资源类型</div>
+      <div class="modal-options">
+        <div class="modal-option selected" data-type="video" onclick="selectBatchType('video')">视频</div>
+        <div class="modal-option" data-type="photo" onclick="selectBatchType('photo')">封面</div>
+        <div class="modal-option" data-type="txt" onclick="selectBatchType('txt')">文案</div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">选择下载方式</div>
+      <div class="modal-options">
+        <div class="modal-option selected" data-method="direct" onclick="selectBatchMethod('direct')">逐个下载</div>
+        <div class="modal-option" data-method="zip" onclick="selectBatchMethod('zip')">打包 ZIP</div>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">起始序号</div>
+      <div class="modal-section-inline">
+        <label>从第</label>
+        <input type="number" id="batchStartIndex" value="1" min="1" max="999">
+        <label>个开始编号</label>
+      </div>
+    </div>
+    <div class="modal-stats" id="batchModalStats"></div>
+    <div class="modal-progress" id="batchModalProgress">
+      <div class="progress-track"><div class="progress-fill" id="batchProgressFill"></div></div>
+      <div class="modal-progress-text" id="batchProgressText"></div>
+    </div>
+    <div class="modal-actions" id="batchModalActions">
+      <button class="btn btn-secondary" onclick="closeBatchModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmBatchDownload()">开始下载</button>
+    </div>
+  </div>
+</div>
+
+<!-- Server Help Modal -->
+<div class="server-help-overlay" id="serverHelpModal" onclick="if(event.target===this)closeServerHelpModal()">
+  <div class="server-help-modal" onclick="event.stopPropagation()">
+    <h3>启动本地转写服务器</h3>
+    <div class="subtitle">复制下方命令到 CMD 运行即可启动全自动转写</div>
+    <div class="cmd-box">
+      <pre id="serverHelpCmd">cd /d "C:\VideoParser"
+python transcribe_server.py</pre>
+      <button class="copy-btn" id="serverHelpCopyBtn" onclick="copyServerHelpCmd()">复制命令</button>
+    </div>
+    <div class="tip" id="serverHelpTip">请把 <code>transcribe_server.py</code> 和本HTML放在同一文件夹，然后复制上方命令到CMD运行。</div>
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="closeServerHelpModal()">关闭</button>
+      <button class="btn btn-primary" onclick="copyServerHelpCmd()">复制命令</button>
+    </div>
+  </div>
+</div>
+
+<!-- Video Preview Modal -->
+<div class="video-modal-overlay" id="videoModal" onclick="closeVideoModal(event)">
+  <div class="video-modal" onclick="event.stopPropagation()">
+    <button class="video-modal-close" onclick="closeVideoModal()">&times;</button>
+    <video id="videoPlayer" controls autoplay></video>
+    <div class="video-modal-info" id="videoModalInfo"></div>
+  </div>
+</div>
+
+<script>
+// ==================== Global State ====================
+var parseResults = [];
+var currentMode = 'batch'; // 'batch' or 'transcript'
+
+// ==================== V18: Layout & Naming Controls ====================
+function setResultLayout(n){
+  var list = document.getElementById('resultsList');
+  if(!list) return;
+  list.classList.toggle('single-col', true);
+  // Dual-column option removed; always single column
+  try{ localStorage.setItem('vp18_layout', '1'); }catch(e){}
+}
+function setNamingRule(v){
+  var sel = document.getElementById('namingRule');
+  if(sel) sel.value = v;
+  var seg = document.getElementById('namingSegment');
+  if(seg){
+    var btns = seg.getElementsByTagName('button');
+    btns[0].className = v === 'author_type_idx' ? 'active' : '';
+    btns[1].className = v === 'type_idx_author_title' ? 'active' : '';
+  }
+  try{ localStorage.setItem('vp18_naming', v); }catch(e){}
+}
+(function restorePrefs(){
+  try{
+    // Always single column; dual-column option removed
+    setResultLayout(1);
+    var naming = localStorage.getItem('vp18_naming');
+    if(naming){ setNamingRule(naming); }
+  }catch(e){}
+})();
+
+var CORS_PROXIES = [
+  function(u){return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u)},
+  function(u){return 'https://corsproxy.io/?url=' + encodeURIComponent(u)},
+  function(u){return 'https://api.codetabs.com/v1/proxy/?quest=' + encodeURIComponent(u)},
+  function(u){return 'https://thingproxy.freeboard.io/fetch/' + u},
+  function(u){return 'https://cors.eu.org/' + u},
+  function(u){return 'https://proxy.cors.sh/' + u}
+];
+
+// CORS proxies that support POST with body forwarding
+var CORS_POST_PROXIES = [
+  function(targetUrl, body) { return {
+    url: 'https://thingproxy.freeboard.io/fetch/' + targetUrl,
+    init: {method:'POST', headers:{'Content-Type':'application/json'}, body: body}
+  }},
+  function(targetUrl, body) { return {
+    url: 'https://corsproxy.io/?url=' + encodeURIComponent(targetUrl),
+    init: {method:'POST', headers:{'Content-Type':'application/json'}, body: body}
+  }},
+  function(targetUrl, body) { return {
+    url: 'https://proxy.cors.sh/' + targetUrl,
+    init: {method:'POST', headers:{'Content-Type':'application/json'}, body: body}
+  }}
+];
+
+// DouParse free API endpoint (supports 9 platforms, no login required)
+var DOUPARSE_API = 'https://scratch.codepku.com/api/parse';
+
+// 视频号解析代理（Cloudflare Worker）。留空则视频号走「跳转外部工具」方案。
+// 部署方法见 videoparser-worker/README：把该目录 wrangler deploy 后，把你的
+// *.workers.dev 地址填到这里即可（例如 'https://videoparser-sph.xxx.workers.dev'）。
+// Worker 会伪装成 convry.com 去调它的后端，并补上跨域头，让纯静态 PWA 也能直接拿直链。
+var SPH_WORKER_URL = 'https://videoparser-sph.onlyvideoget.workers.dev';
+
+// DouParse 1429 限额标志（今日免费额度用完时置位，用于给出明确提示）
+var DP_LIMIT_REACHED = false;
+var DP_LIMIT_TOASTED = false;
+function noteDpLimit(){
+  DP_LIMIT_REACHED = true;
+  if(!DP_LIMIT_TOASTED){
+    DP_LIMIT_TOASTED = true;
+    try{ showToast('DouParse 免费接口今日限额已触发，解析可能失败，请明天再试', 'error'); }catch(e){}
+  }
+}
+
+// ==================== Fetch with Timeout ====================
+function fetchWithTimeout(url, init, timeoutMs){
+  timeoutMs = timeoutMs || 12000;
+  var controller = new AbortController();
+  var timer = setTimeout(function(){ controller.abort(); }, timeoutMs);
+  init = init || {};
+  init.signal = controller.signal;
+  return fetch(url, init).finally(function(){ clearTimeout(timer); });
+}
+
+// ==================== Parse via DouParse API ====================
+async function parseViaDouParseAPI(url){
+  var body = JSON.stringify({url: url});
+
+  // Strategy 1: Try direct fetch (in case CORS is enabled)
+  try{
+    var resp = await fetchWithTimeout(DOUPARSE_API, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: body
+    }, 8000);
+    if(resp.ok){
+      var json = await resp.json();
+      if(json.code === 0 && json.data){
+        return await mapDouParseData(json.data, url);
+      }
+      if(json.code === 1429){ noteDpLimit(); }
+      if(json.code === 1001 || (json.message && json.message.indexOf('视频号') >= 0)){
+        return { _unsupported: true, message: json.message || '该平台暂不支持网页端解析' };
+      }
+    }
+  } catch(e){ /* CORS blocked, try proxies */ }
+
+  // Strategy 2: Try via POST-supporting CORS proxies
+  for(var i = 0; i < CORS_POST_PROXIES.length; i++){
+    try{
+      var req = CORS_POST_PROXIES[i](DOUPARSE_API, body);
+      var resp = await fetchWithTimeout(req.url, req.init, 12000);
+      if(resp.ok){
+        var json = await resp.json();
+        if(json.code === 0 && json.data){
+          return await mapDouParseData(json.data, url);
+        }
+        if(json.code === 1429){
+          noteDpLimit();
+          console.warn('DouParse daily limit reached');
+          return null;
+        }
+        if(json.code === 1001 || (json.message && json.message.indexOf('视频号') >= 0)){
+          return { _unsupported: true, message: json.message || '该平台暂不支持网页端解析' };
+        }
+      }
+    } catch(e){
+      console.warn('DouParse proxy ' + i + ' failed:', e.message);
+    }
+  }
+
+  return null;
+}
+
+// ==================== Fetch og:title via server proxy (real title source) ====================
+// DouParse 的 data.title 经常是描述文本而非真实标题，og:title 更可靠
+// 通过本地服务器代理获取（避免浏览器 CORS 限制）
+async function fetchOgTitle(url){
+  try {
+    var resp = await fetchWithTimeout('/api/og-title?url=' + encodeURIComponent(url), {method: 'GET'}, 8000);
+    if(!resp.ok) return null;
+    var json = await resp.json();
+    return json.success ? json.og_title : null;
+  } catch(e) {
+    return null;
+  }
+}
+
+async function mapDouParseData(data, originalUrl){
+  var splitResult = splitDescAndTags(data.desc || '');
+
+  // 关键修复：DouParse 的 data.title 经常是描述文本而非真实标题
+  // 用 og:title（页面 meta 标签）作为更可靠的真实标题来源
+  var realTitle = '';
+  try {
+    var ogTitle = await fetchOgTitle(originalUrl);
+    if(ogTitle) realTitle = cleanTitleText(ogTitle);
+  } catch(e) { /* og:title 获取失败，降级用 DouParse 字段 */ }
+
+  // 如果 og:title 拿到了真实标题就用它；否则降级到 DouParse 的 data.title
+  var finalTitle = realTitle || determineTitle(data.title || '', data.desc || '');
+
+  var result = {
+    platform: data.platform || detectPlatform(originalUrl),
+    videoUrl: '',
+    coverUrl: data.cover || '',
+    desc: splitResult.desc,
+    tags: splitResult.tags,
+    author: (data.author && data.author.nickname) || '',
+    title: finalTitle,
+    originalUrl: originalUrl,
+    status: 'success',
+    parseSource: 'DouParse API'
+  };
+
+  // Video URL: prefer best quality, fallback to play_url
+  if(data.qualities && data.qualities.length > 0){
+    var best = null;
+    for(var i = 0; i < data.qualities.length; i++){
+      if(data.qualities[i].is_best){ best = data.qualities[i]; break; }
+    }
+    result.videoUrl = (best || data.qualities[0]).url;
+  } else if(data.play_url){
+    result.videoUrl = data.play_url;
+  }
+
+  // Image posts: use first image as cover if no cover
+  if(data.aweme_type === 'image' && data.images && data.images.length > 0){
+    if(!result.coverUrl && data.images[0]){
+      result.coverUrl = data.images[0];
+    }
+  }
+
+  return result;
+}
+
+// ==================== Extract Author from Text ====================
+function extractAuthorFromText(text){
+  if(!text) return '';
+  // Format: -博主名|小红书-你的生活兴趣社区
+  var match = text.match(/-(.+?)\|小红书-你的生活兴趣社区/);
+  if(match) return match[1].trim();
+  // Also try: 博主名|小红书
+  match = text.match(/\|小红书/);
+  if(match){
+    var before = text.substring(0, match.index);
+    var dashMatch = before.match(/([^\s\-]+)$/);
+    if(dashMatch) return dashMatch[1].trim();
+  }
+  return '';
+}
+
+// ==================== Unified Title Determination ====================
+// V17: 有真实标题则清洗后使用；无标题取文案第一个 # 前的文字作为标题
+function cleanTitleText(text){
+  if(!text) return '';
+  var t = String(text).replace(/\[话题\]/g, ' ');
+  // 清理平台后缀: " | 小红书 - 你的生活兴趣社区" / " - 小红书" / " - 抖音" 等
+  t = t.replace(/\s*[\|｜]\s*小红书[\s\S]*$/g, '');
+  t = t.replace(/\s*[-–—]\s*你的生活兴趣社区\s*$/g, '');
+  t = t.replace(/\s*[-–—]\s*(小红书|抖音|快手|微博|哔哩哔哩|B站|视频号)\s*$/gi, '');
+  t = t.replace(/(?:[_\s]*(?:哔哩哔哩|bilibili))+\s*$/gi, '');
+  return t.replace(/\s+/g, ' ').trim();
+}
+
+function determineTitle(rawTitle, rawDesc){
+  // 规则（用户确认）：有发布标题 → 直接使用（不做任何句内拆分）；无标题 → 取文案第一个 # 前的文字；都空 → 空（UI 显示"无标题"）
+  var t = cleanTitleText(rawTitle);
+  if(t) return t;
+  return extractTitleFromDesc(rawDesc);
+}
+
+// 无发布标题时，取文案第一个 # 前的文字作为标题（不做句内拆分）
+function extractTitleFromDesc(rawDesc){
+  if(!rawDesc) return '';
+  var d = String(rawDesc).replace(/\[话题\]/g, ' ');
+  var i = d.indexOf('#');
+  var before = (i >= 0 ? d.substring(0, i) : d);
+  return before.replace(/\s+/g, ' ').trim();
+}
+
+// ==================== Utility ====================
+function showToast(msg, type, duration){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  t.style.whiteSpace = 'pre-line';
+  setTimeout(function(){ t.className = 'toast'; t.style.whiteSpace = ''; }, duration || 3000);
+}
+
+function sanitizeFilename(name){
+  if(!name) return 'unknown';
+  return String(name)
+    .replace(/[\\\/\:\*\?\"\<\>\|]/g, '_')
+    .replace(/[\x00-\x1f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .substring(0, 80);
+}
+
+function getNamingRule(){
+  var el = document.getElementById('namingRule');
+  return el ? el.value : 'author_type_idx';
+}
+
+function generateFileName(type, index, author, title, ext, isBatch, customIndex){
+  var a = sanitizeFilename(author) || 'unknown';
+  var t = sanitizeFilename(title) || 'untitled';
+  var rule = getNamingRule();
+  var base;
+  // Transcript (逐字稿) 固定使用 博主_标题 格式
+  if(type === 'Transcript'){
+    base = a + '_' + t;
+    return base + '.' + ext;
+  }
+  if(isBatch){
+    var idx = (customIndex != null && customIndex != undefined) ? customIndex : index;
+    var idxStr = String(idx).padStart(2,'0');
+    if(rule === 'type_idx_author_title'){
+      base = type + '_' + idxStr + '_' + a + '_' + t;
+    } else {
+      base = a + '_' + type + '_' + idxStr;
+    }
+  } else {
+    if(rule === 'type_idx_author_title'){
+      base = type + '_' + a + '_' + t;
+    } else {
+      base = a + '_' + type;
+    }
+  }
+  return base + '.' + ext;
+}
+
+function detectPlatform(url){
+  url = url.toLowerCase().trim();
+  if(url.indexOf('xiaohongshu.com') >= 0 || url.indexOf('xhslink.com') >= 0) return 'xiaohongshu';
+  if(url.indexOf('douyin.com') >= 0 || url.indexOf('v.douyin.com') >= 0 || url.indexOf('iesdouyin.com') >= 0) return 'douyin';
+  if(url.indexOf('bilibili.com') >= 0 || url.indexOf('b23.tv') >= 0) return 'bilibili';
+  if(url.indexOf('kuaishou.com') >= 0 || url.indexOf('chenzhongtech.com') >= 0) return 'kuaishou';
+  if(url.indexOf('weibo.com') >= 0 || url.indexOf('weibo.cn') >= 0) return 'weibo';
+  if(url.indexOf('weixin.qq.com/sph') >= 0 || url.indexOf('channels.weixin.qq.com') >= 0 || url.indexOf('finder.video.qq.com') >= 0) return 'weixin';
+  if(url.indexOf('tiktok.com') >= 0) return 'tiktok';
+  return 'unknown';
+}
+
+function extractUrl(text){
+  if(!text) return null;
+  text = text.trim();
+  var match = text.match(/https?:\/\/[^\s<>"']+/i);
+  if(match) return match[0];
+  if(text.indexOf('http://') === 0 || text.indexOf('https://') === 0) return text;
+  return null;
+}
+
+// 从粘贴文本中提取标题（小红书分享格式：【标题 - 作者 | 小红书 - 你的生活兴趣社区】）
+function extractTitleFromText(text){
+  if(!text) return '';
+  // XHS: 【谁敢想这是20年前... - OMI | 小红书 - 你的生活兴趣社区】
+  var m = text.match(/【(.+?)】/);
+  if(m){
+    var inner = m[1];
+    // Format: "标题 - 作者 | 小红书..." → take part before " - "
+    var dashIdx = inner.indexOf(' - ');
+    if(dashIdx > 0) return inner.substring(0, dashIdx).trim();
+    // Fallback: no " - " separator, use whole content
+    var t = inner.trim();
+    // 纯平台名占位（如"【视频号】"）不是标题
+    if(/^(视频号|快手|抖音|小红书|微博|B站|哔哩哔哩|链接|分享|视频)$/.test(t)) return '';
+    return t;
+  }
+  // DY/other: "标题 - 抖音" or just title before URL
+  var urlMatch = text.match(/https?:\/\/[^\s<>"']+/i);
+  if(urlMatch){
+    var beforeUrl = text.substring(0, urlMatch.index).trim();
+    // Remove trailing emojis/symbols
+    beforeUrl = beforeUrl.replace(/[😆🤍💚❤️\s]+$/, '').trim();
+    if(beforeUrl && beforeUrl.length > 2) return beforeUrl;
+  }
+  return '';
+}
+
+// ==================== CORS Fetch ====================
+async function fetchViaProxy(url, asText){
+  for(var i = 0; i < CORS_PROXIES.length; i++){
+    try{
+      var proxyUrl = CORS_PROXIES[i](url);
+      var resp = await fetchWithTimeout(proxyUrl, {
+        method: 'GET',
+        headers: {'Accept': 'text/html,application/xhtml+xml,application/xml,text/plain,*/*'}
+      }, 10000);
+      if(!resp.ok) continue;
+      if(asText !== false){
+        return await resp.text();
+      } else {
+        return await resp.arrayBuffer();
+      }
+    } catch(e){
+      console.warn('Proxy ' + i + ' failed:', e.message);
+    }
+  }
+  return null;
+}
+
+async function fetchRedirectedUrl(shortUrl){
+  for(var i = 0; i < CORS_PROXIES.length; i++){
+    try{
+      var resp = await fetchWithTimeout(CORS_PROXIES[i](shortUrl), {method:'GET', redirect:'follow'}, 10000);
+      if(resp.ok){
+        var text = await resp.text();
+        var match = text.match(/<(?:meta|a)[^>]*(?:href|url)=["\']([^"\']+)["\']/i);
+        if(match) return match[1];
+        return resp.url || shortUrl;
+      }
+    } catch(e){}
+  }
+  return shortUrl;
+}
+
+// ==================== Platform Parsers ====================
+function parseXiaohongshu(html, originalUrl){
+  var result = {platform:'xiaohongshu', videoUrl:'', coverUrl:'', desc:'', author:'', title:'', originalUrl:originalUrl};
+  
+  // Extract author from page title: -博主名|小红书-你的生活兴趣社区
+  var titleTagMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+  if(titleTagMatch){
+    var pageTitle = titleTagMatch[1];
+    var authorMatch = pageTitle.match(/-(.+?)\|小红书/);
+    if(authorMatch) result.author = authorMatch[1].trim();
+  }
+  
+  // Try __INITIAL_STATE__ (multiple patterns)
+  var stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\})\s*<\/script>/);
+  if(!stateMatch){
+    stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\})\s*;/);
+  }
+  if(!stateMatch){
+    // Try without closing script/semicolon - grab until double newline or end
+    stateMatch = html.match(/window\.__INITIAL_STATE__\s*=\s*(\{[\s\S]*?\})\s*<\/?script/);
+  }
+  if(stateMatch){
+    try{
+      var raw = stateMatch[1];
+      raw = raw.replace(/:\s*undefined/g, ': null');
+      var state = JSON.parse(raw);
+      
+      var note = null;
+      if(state.note && state.note.noteDetailMap){
+        var keys = Object.keys(state.note.noteDetailMap);
+        for(var i = 0; i < keys.length; i++){
+          var entry = state.note.noteDetailMap[keys[i]];
+          if(entry && entry.note){
+            note = entry.note;
+            break;
+          }
+        }
+      }
+      
+      if(note){
+        var noteAuthor = note.user ? (note.user.nickname || note.user.nickName || '') : '';
+        if(noteAuthor) result.author = noteAuthor;
+        result.title = determineTitle(note.title || '', note.desc || '');
+        var rawDesc = note.desc || note.title || '';
+        var splitResult = splitDescAndTags(rawDesc);
+        result.desc = splitResult.desc;
+        result.tags = splitResult.tags;
+        
+        if(note.video && note.video.media && note.video.media.stream){
+          var streams = note.video.media.stream;
+          var types = ['h264','h265','av1'];
+          for(var t = 0; t < types.length; t++){
+            if(streams[types[t]] && streams[types[t]][0] && streams[types[t]][0].masterUrl){
+              result.videoUrl = streams[types[t]][0].masterUrl;
+              break;
+            }
+          }
+        }
+        
+        if(note.imageList && note.imageList.length > 0){
+          result.coverUrl = note.imageList[0].urlDefault || note.imageList[0].url || '';
+        }
+        
+        return result;
+      }
+    } catch(e){
+      console.warn('XHS state parse error:', e);
+    }
+  }
+  
+  // Fallback: meta tags
+  var ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+  var ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+  var ogVideo = html.match(/<meta[^>]*property=["']og:video["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*property=["']og:video:url["'][^>]*content=["']([^"']+)["']/i);
+  var ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+  
+  result.title = determineTitle(ogTitle ? ogTitle[1] : '', ogDesc ? ogDesc[1] : '');
+        if(ogDesc) {
+          var splitResult = splitDescAndTags(ogDesc[1]);
+          result.desc = splitResult.desc;
+          result.tags = splitResult.tags;
+        }
+  if(ogVideo) result.videoUrl = ogVideo[1];
+  if(ogImage) result.coverUrl = ogImage[1];
+  
+  // Try to find author from page (only if not already found from title)
+  if(!result.author){
+    var authorMatch = html.match(/"nickName"\s*:\s*"([^"]+)"/) || html.match(/"nickname"\s*:\s*"([^"]+)"/);
+    if(authorMatch) result.author = authorMatch[1];
+  }
+  
+  if(!result.title && !result.desc && !result.videoUrl && !result.coverUrl){
+    return null;
+  }
+  return result;
+}
+
+function parseDouyin(html, originalUrl){
+  var result = {platform:'douyin', videoUrl:'', coverUrl:'', desc:'', author:'', title:'', originalUrl:originalUrl};
+  
+  // Try RENDER_DATA
+  var renderMatch = html.match(/id="RENDER_DATA"[^>]*>([\s\S]*?)<\/script>/);
+  if(renderMatch){
+    try{
+      var raw = decodeURIComponent(renderMatch[1]);
+      raw = raw.replace(/:\s*undefined/g, ': null');
+      var data = JSON.parse(raw);
+      
+      function findVideoData(obj, depth){
+        if(!obj || depth > 6) return null;
+        if(obj.video && (obj.video.playApi || obj.video.play_addr)){
+          return obj;
+        }
+        if(typeof obj === 'object'){
+          var keys = Object.keys(obj);
+          for(var i = 0; i < keys.length; i++){
+            var found = findVideoData(obj[keys[i]], depth + 1);
+            if(found) return found;
+          }
+        }
+        return null;
+      }
+      
+      var videoData = findVideoData(data, 0);
+      if(videoData){
+        result.author = videoData.authorInfo ? (videoData.authorInfo.nickname || '') : '';
+        if(videoData.author){
+          result.author = videoData.author.nickname || result.author;
+        }
+        var rawDesc = videoData.desc || '';
+        var splitResult = splitDescAndTags(rawDesc);
+        result.desc = splitResult.desc;
+        result.tags = splitResult.tags;
+        result.title = determineTitle(videoData.title || '', videoData.desc || '');
+        
+        if(videoData.video){
+          if(videoData.video.playApi){
+            result.videoUrl = videoData.video.playApi.startsWith('http') ? videoData.video.playApi : 'https://www.douyin.com' + videoData.video.playApi;
+          }
+          if(videoData.video.play_addr && videoData.video.play_addr.url_list && videoData.video.play_addr.url_list.length > 0){
+            result.videoUrl = videoData.video.play_addr.url_list[0];
+          }
+          if(videoData.video.cover){
+            result.coverUrl = videoData.video.cover.url_list ? videoData.video.cover.url_list[0] : videoData.video.cover;
+          }
+          if(videoData.video.dynamic_cover && videoData.video.dynamic_cover.url_list){
+            result.coverUrl = result.coverUrl || videoData.video.dynamic_cover.url_list[0];
+          }
+        }
+        
+        return result;
+      }
+    } catch(e){
+      console.warn('Douyin parse error:', e);
+    }
+  }
+  
+  // Try _ROUTER_DATA
+  var routerMatch = html.match(/_ROUTER_DATA\s*=\s*(\{[\s\S]*?\})\s*;/);
+  if(routerMatch){
+    try{
+      var data = JSON.parse(routerMatch[1].replace(/:\s*undefined/g, ': null'));
+      var loaderData = data.loaderData;
+      if(loaderData){
+        var keys = Object.keys(loaderData);
+        for(var i = 0; i < keys.length; i++){
+          var item = loaderData[keys[i]];
+          if(item && item.videoInfoRes){
+            var vi = item.videoInfoRes;
+            result.author = vi.authorInfo ? (vi.authorInfo.nickname || '') : '';
+            var rawDesc = vi.desc || '';
+        var splitResult = splitDescAndTags(rawDesc);
+        result.desc = splitResult.desc;
+        result.tags = splitResult.tags;
+            result.title = determineTitle(vi.title || '', vi.desc || '');
+            if(vi.video){
+              if(vi.video.playApi) result.videoUrl = vi.video.playApi;
+              if(vi.video.cover) result.coverUrl = vi.video.cover;
+            }
+            return result;
+          }
+        }
+      }
+    } catch(e){}
+  }
+  
+  // Fallback: meta tags & regex
+  var ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+  var ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+  var ogVideo = html.match(/<meta[^>]*property=["']og:video["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*property=["']og:video:url["'][^>]*content=["']([^"']+)["']/i);
+  var ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+  
+  result.title = determineTitle(ogTitle ? ogTitle[1] : '', ogDesc ? ogDesc[1] : '');
+        if(ogDesc) {
+          var splitResult = splitDescAndTags(ogDesc[1]);
+          result.desc = splitResult.desc;
+          result.tags = splitResult.tags;
+        }
+  if(ogVideo) result.videoUrl = ogVideo[1];
+  if(ogImage) result.coverUrl = ogImage[1];
+  
+  var authorMatch = html.match(/"nickname"\s*:\s*"([^"]+)"/);
+  if(authorMatch) result.author = authorMatch[1];
+  
+  // Try to find video URL in script
+  if(!result.videoUrl){
+    var videoUrlMatch = html.match(/"playAddr"\s*:\s*\{[^}]*"src"\s*:\s*"([^"]+)"/) || html.match(/"play_addr"[^}]*"url_list"\s*:\s*\["([^"]+)"/);
+    if(videoUrlMatch) result.videoUrl = videoUrlMatch[1].replace(/\\u002F/g, '/').replace(/\\\//g, '/');
+  }
+  
+  if(!result.title && !result.desc && !result.videoUrl && !result.coverUrl){
+    return null;
+  }
+  return result;
+}
+
+async function parseBilibili(url, originalUrl){
+  var result = {platform:'bilibili', videoUrl:'', coverUrl:'', desc:'', author:'', title:'', originalUrl:originalUrl};
+  
+  var bvid = url.match(/\/video\/(BV\w+)/i);
+  var avid = url.match(/\/video\/av(\d+)/i);
+  
+  var apiUrl = '';
+  if(bvid){
+    apiUrl = 'https://api.bilibili.com/x/web-interface/view?bvid=' + bvid[1];
+  } else if(avid){
+    apiUrl = 'https://api.bilibili.com/x/web-interface/view?aid=' + avid[1];
+  } else {
+    var html = await fetchViaProxy(url);
+    if(html){
+      var ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+      var ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+      var ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+      result.title = determineTitle(ogTitle ? ogTitle[1] : '', ogDesc ? ogDesc[1] : '');
+            if(ogDesc) {
+          var splitResult = splitDescAndTags(ogDesc[1]);
+          result.desc = splitResult.desc;
+          result.tags = splitResult.tags;
+        }
+      if(ogImage) result.coverUrl = ogImage[1];
+      var bvidMatch = html.match(/"bvid"\s*:\s*"(BV\w+)"/);
+      if(bvidMatch){
+        apiUrl = 'https://api.bilibili.com/x/web-interface/view?bvid=' + bvidMatch[1];
+      }
+    }
+  }
+  
+  if(apiUrl){
+    try{
+      var resp = await fetchViaProxy(apiUrl);
+      if(resp){
+        var data = JSON.parse(resp);
+        if(data.code === 0 && data.data){
+          result.title = determineTitle(data.data.title || '', data.data.desc || '') || result.title;
+          result.author = data.data.owner ? data.data.owner.name : '';
+          var rawDesc = data.data.desc || data.data.title || '';
+          var splitResult = splitDescAndTags(rawDesc);
+          result.desc = splitResult.desc;
+          result.tags = splitResult.tags;
+          result.coverUrl = data.data.pic || result.coverUrl;
+          
+          // Get video stream URL
+          var cid = data.data.cid;
+          var aid = data.data.aid;
+          if(cid && aid){
+            var streamApi = 'https://api.bilibili.com/x/player/playurl?avid=' + aid + '&cid=' + cid + '&qn=80&platform=html5&high_quality=1';
+            try{
+              var streamResp = await fetchViaProxy(streamApi);
+              if(streamResp){
+                var streamData = JSON.parse(streamResp);
+                if(streamData.code === 0 && streamData.data){
+                  if(streamData.data.durl && streamData.data.durl.length > 0){
+                    result.videoUrl = streamData.data.durl[0].url;
+                  }
+                }
+              }
+            } catch(e){}
+          }
+          return result;
+        }
+      }
+    } catch(e){
+      console.warn('Bilibili API error:', e);
+    }
+  }
+  
+  if(!result.title && !result.coverUrl){
+    return null;
+  }
+  return result;
+}
+
+function parseKuaishou(html, originalUrl){
+  var result = {platform:'kuaishou', videoUrl:'', coverUrl:'', desc:'', author:'', title:'', originalUrl:originalUrl};
+  
+  var ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+  var ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+  var ogVideo = html.match(/<meta[^>]*property=["']og:video["'][^>]*content=["']([^"']+)["']/i);
+  var ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+  
+  result.title = determineTitle(ogTitle ? ogTitle[1] : '', ogDesc ? ogDesc[1] : '');
+        if(ogDesc) {
+          var splitResult = splitDescAndTags(ogDesc[1]);
+          result.desc = splitResult.desc;
+          result.tags = splitResult.tags;
+        }
+  if(ogVideo) result.videoUrl = ogVideo[1];
+  if(ogImage) result.coverUrl = ogImage[1];
+  
+  var authorMatch = html.match(/"userName"\s*:\s*"([^"]+)"/) || html.match(/"user_name"\s*:\s*"([^"]+)"/);
+  if(authorMatch) result.author = authorMatch[1];
+  
+  if(!result.title && !result.desc && !result.videoUrl && !result.coverUrl) return null;
+  return result;
+}
+
+function parseWeibo(html, originalUrl){
+  var result = {platform:'weibo', videoUrl:'', coverUrl:'', desc:'', author:'', title:'', originalUrl:originalUrl};
+  
+  var ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+  var ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+  var ogVideo = html.match(/<meta[^>]*property=["']og:video["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*property=["']og:video:url["'][^>]*content=["']([^"']+)["']/i);
+  var ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+  
+  result.title = determineTitle(ogTitle ? ogTitle[1] : '', ogDesc ? ogDesc[1] : '');
+        if(ogDesc) {
+          var splitResult = splitDescAndTags(ogDesc[1]);
+          result.desc = splitResult.desc;
+          result.tags = splitResult.tags;
+        }
+  if(ogVideo) result.videoUrl = ogVideo[1];
+  if(ogImage) result.coverUrl = ogImage[1];
+  
+  var authorMatch = html.match(/"screen_name"\s*:\s*"([^"]+)"/);
+  if(authorMatch) result.author = authorMatch[1];
+  
+  if(!result.title && !result.desc && !result.videoUrl && !result.coverUrl) return null;
+  return result;
+}
+
+function parseGeneric(html, originalUrl){
+  var result = {platform:'unknown', videoUrl:'', coverUrl:'', desc:'', author:'', title:'', originalUrl:originalUrl};
+  
+  var ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+  var ogDesc = html.match(/<meta[^>]*property=["']og:description["'][^>]*content=["']([^"']+)["']/i);
+  var ogVideo = html.match(/<meta[^>]*property=["']og:video["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*property=["']og:video:url["'][^>]*content=["']([^"']+)["']/i);
+  var ogImage = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+  var ogAuthor = html.match(/<meta[^>]*property=["']og:author["'][^>]*content=["']([^"']+)["']/i) || html.match(/<meta[^>]*name=["']author["'][^>]*content=["']([^"']+)["']/i);
+  
+  result.title = determineTitle(ogTitle ? ogTitle[1] : '', ogDesc ? ogDesc[1] : '');
+        if(ogDesc) {
+          var splitResult = splitDescAndTags(ogDesc[1]);
+          result.desc = splitResult.desc;
+          result.tags = splitResult.tags;
+        }
+  if(ogVideo) result.videoUrl = ogVideo[1];
+  if(ogImage) result.coverUrl = ogImage[1];
+  if(ogAuthor) result.author = ogAuthor[1];
+  
+  if(!result.title && !result.desc && !result.videoUrl && !result.coverUrl) return null;
+  return result;
+}
+
+// ==================== Main Parse Function ====================
+// 从 convry 返回的 JSON 里递归找出视频直链（字段名 live_url / play_url / url 等）
+function extractSphVideo(obj, depth){
+  if(!obj || depth > 6) return null;
+  if(typeof obj === 'string'){
+    // 视频号直链通常带这些特征
+    if(/\.(mp4|flv|m3u8)(\?|$)/i.test(obj) || /finder\.video\.qq\.com|vd\.meitudata\.com|tx\.v\.qq\.com|mp\.weixin\.qq\.com\/vweixin\.php/i.test(obj)){
+      return obj;
+    }
+    return null;
+  }
+  if(Array.isArray(obj)){
+    for(var i=0;i<obj.length;i++){
+      var r = extractSphVideo(obj[i], (depth||0)+1);
+      if(r) return r;
+    }
+    return null;
+  }
+  if(typeof obj === 'object'){
+    // 优先读取已知字段
+    var candidates = [obj.live_url, obj.play_url, obj.video_url, obj.url, obj.src, obj.playUrl, obj.videoUrl];
+    for(var k=0;k<candidates.length;k++){
+      if(typeof candidates[k] === 'string' && candidates[k]){
+        var r2 = extractSphVideo(candidates[k], (depth||0)+1);
+        if(r2) return r2;
+      }
+    }
+    for(var key in obj){
+      if(obj.hasOwnProperty(key)){
+        var r3 = extractSphVideo(obj[key], (depth||0)+1);
+        if(r3) return r3;
+      }
+    }
+  }
+  return null;
+}
+
+// 视频号：经自建 Cloudflare Worker v2（多策略解析）
+// Worker 返回格式：{ success:true, videoUrl:"...", title:"..." }
+//            或 { success:false, error:"...", redirectUrl:"..." }
+async function parseViaConvryWorker(url){
+  if(!SPH_WORKER_URL) return null;
+  try{
+    var endpoint = SPH_WORKER_URL + (SPH_WORKER_URL.indexOf('?') >= 0 ? '&' : '?') + 'url=' + encodeURIComponent(url);
+    var resp = await fetchWithTimeout(endpoint, {method:'GET'}, 20000);
+    if(!resp.ok) return null;
+    var json = await resp.json();
+    if(!json) return null;
+
+    // 成功：拿到直链
+    if(json.success && json.videoUrl){
+      var videoUrl = json.videoUrl.replace(/^http:\/\//i, 'https://');
+      return {
+        platform: 'weixin',
+        status: 'success',
+        videoUrl: videoUrl,
+        coverUrl: json.coverUrl || '',
+        desc: json.desc || '',
+        author: json.author || '',
+        title: json.title || '',
+        tags: json.tags || []
+      };
+    }
+
+    // 失败但有跳转链接：返回 error + redirectUrl，让前端显示跳转按钮
+    if(json.success === false && json.redirectUrl){
+      return {
+        platform: 'weixin',
+        status: 'error',
+        originalUrl: url,
+        videoUrl: '',
+        coverUrl: '',
+        desc: '',
+        author: '',
+        title: '',
+        tags: [],
+        redirectUrl: json.redirectUrl,
+        error: json.error || '视频号解析失败，请使用跳转下载'
+      };
+    }
+
+    // 其他情况视为失败
+    return null;
+  }catch(e){
+    console.warn('sph worker parse failed:', e && e.message);
+    return null;
+  }
+}
+
+async function parseSingleLink(url, index, textAuthor, textTitle){
+  var platform = detectPlatform(url);
+
+  // 视频号优先走自建 Worker v2（多策略解析：直链优先，失败给跳转链接）
+  if(platform === 'weixin'){
+    try{
+      var cw = await parseViaConvryWorker(url);
+      if(cw){
+        cw.index = index;
+        if(cw.status === 'success'){
+          if(!cw.author && textAuthor) cw.author = textAuthor;
+          if(textTitle && !cw._titleFromText){ cw.title = cleanTitleText(textTitle); cw._titleFromText = true; }
+        } else {
+          // error + redirectUrl 的情况也直接返回
+          if(textAuthor) cw.author = textAuthor;
+          if(textTitle) cw.title = cleanTitleText(textTitle);
+        }
+        return cw;
+      }
+      // Worker 完全无响应（null），继续走 DouParse
+    }catch(e){ console.warn('weixin worker path failed:', e.message); }
+  }
+
+  // Strategy 1: Try DouParse API (most reliable, works for all platforms)
+  try{
+    var dpResult = await parseViaDouParseAPI(url);
+    if(dpResult){
+      // 视频号等平台 API 明确不支持，返回专属提示
+      if(dpResult._unsupported){
+        return {
+          platform: platform,
+          index: index,
+          status: 'error',
+          originalUrl: url,
+          videoUrl: '',
+          coverUrl: '',
+          desc: '',
+          author: textAuthor || '',
+          title: textTitle ? cleanTitleText(textTitle) : '',
+          redirectUrl: 'https://sph.miuistore.com?sph_url=' + encodeURIComponent(url),
+          error: '视频号仅支持在微信内观看，本站无法直接解析。点击下方绿色按钮，跳转到外部工具下载（链接已自动带上）'
+        };
+      }
+      dpResult.platform = platform;
+      dpResult.index = index;
+      dpResult.status = 'success';
+      // Use textAuthor as fallback if API didn't return author
+      if(!dpResult.author && textAuthor) dpResult.author = textAuthor;
+      // 关键：粘贴文本中的标题是最可靠的来源（优先级最高）
+      if(textTitle && !dpResult._titleFromText){
+        dpResult.title = cleanTitleText(textTitle);
+        dpResult._titleFromText = true;
+      }
+      return dpResult;
+    }
+  } catch(e){
+    console.warn('DouParse API failed for ' + url + ':', e.message);
+  }
+  
+  // Strategy 2: Try HTML parsing via CORS proxy
+  try{
+    if(platform === 'bilibili'){
+      var result = await parseBilibili(url, url);
+      if(result){
+        result.platform = platform;
+        result.index = index;
+        result.status = 'success';
+        if(!result.author && textAuthor) result.author = textAuthor;
+        return result;
+      }
+    } else {
+      var html = await fetchViaProxy(url);
+      if(html){
+        var result;
+        if(platform === 'xiaohongshu') result = parseXiaohongshu(html, url);
+        else if(platform === 'douyin') result = parseDouyin(html, url);
+        else if(platform === 'kuaishou') result = parseKuaishou(html, url);
+        else if(platform === 'weibo') result = parseWeibo(html, url);
+        else result = parseGeneric(html, url);
+        
+        if(result){
+          result.platform = platform;
+          result.index = index;
+          result.status = 'success';
+          // Use textAuthor as fallback
+          if(!result.author && textAuthor) result.author = textAuthor;
+          result.parseSource = 'HTML';
+          return result;
+        }
+      }
+    }
+  } catch(e){
+    console.error('HTML parse error for ' + url + ':', e);
+  }
+  
+  // Strategy 3: Return error but pre-fill author from text if available
+  if(platform === 'weixin'){
+    return {
+      platform: platform,
+      index: index,
+      status: 'error',
+      originalUrl: url,
+      videoUrl: '',
+      coverUrl: '',
+      desc: '',
+      author: textAuthor || '',
+      title: textTitle ? cleanTitleText(textTitle) : '',
+      redirectUrl: 'https://sph.miuistore.com?sph_url=' + encodeURIComponent(url),
+      error: '视频号仅支持在微信内观看，本站无法直接解析。点击下方绿色按钮，跳转到外部工具下载（链接已自动带上）'
+    };
+  }
+  return {
+    platform: platform,
+    index: index,
+    status: 'error',
+    originalUrl: url,
+    videoUrl: '',
+    coverUrl: '',
+    desc: '',
+    author: textAuthor || '',
+    title: DP_LIMIT_REACHED ? '免费额度已用完，明天再试' : '',
+    error: DP_LIMIT_REACHED ? 'DouParse 今日免费额度已用完' : '解析失败，请编辑/复制'
+  };
+}
+
+// ==================== Batch Transcript Parse ====================
+async function batchTranscript(){
+  DP_LIMIT_REACHED = false; DP_LIMIT_TOASTED = false;
+  var textarea = document.getElementById('links');
+  var rawText = textarea.value.trim();
+  
+  if(!rawText){
+    showToast('请先输入视频链接', 'error');
+    return;
+  }
+  
+  var lines = rawText.split(/\n/).map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 0; });
+  var links = [];
+  for(var i = 0; i < lines.length; i++){
+    var url = extractUrl(lines[i]);
+    if(url){
+      var textAuthor = extractAuthorFromText(lines[i]);
+      links.push({url: url, author: textAuthor});
+    }
+  }
+  
+  if(links.length === 0){
+    showToast('未检测到有效链接', 'error');
+    return;
+  }
+  
+  if(links.length > 20){
+    links = links.slice(0, 20);
+    showToast('已截取前20个链接', 'error');
+  }
+  
+  // Set mode to transcript
+  currentMode = 'transcript';
+  
+  // Auto-collapse tutorial and FAQ when parsing starts
+  autoCollapseSections();
+  
+  // Disable transcript button
+  var transcriptBtn = document.getElementById('transcriptBtn');
+  var transcriptBtnText = document.getElementById('transcriptBtnText');
+  transcriptBtn.disabled = true;
+  transcriptBtnText.innerHTML = '<span class="spinner"></span> 解析中...';
+  
+  // Also disable batch parse button
+  var parseBtn = document.getElementById('parseBtn');
+  var parseBtnText = document.getElementById('parseBtnText');
+  parseBtn.disabled = true;
+  
+  // Show progress
+  var progressBar = document.getElementById('progressBar');
+  var progressFill = document.getElementById('progressFill');
+  var progressText = document.getElementById('progressText');
+  progressBar.classList.add('active');
+  
+  // Show results section
+  var resultsSection = document.getElementById('resultsSection');
+  var resultsList = document.getElementById('resultsList');
+  resultsSection.style.display = 'block';
+  resultsList.innerHTML = '';
+  
+  parseResults = [];
+  
+  for(var i = 0; i < links.length; i++){
+    var progress = Math.round((i / links.length) * 100);
+    progressFill.style.width = progress + '%';
+    progressText.textContent = '正在解析第 ' + (i + 1) + '/' + links.length + ' 个链接...';
+    
+    // Create placeholder card
+    var cardId = 'card-' + i;
+    var platform = detectPlatform(links[i].url);
+    var platformLabel = getPlatformLabel(platform);
+    var cardHtml = '<div class="result-card parsing transcript-mode" id="' + cardId + '">' +
+      '<div class="card-media transcribing"><span class="card-index">' + (i + 1) + '</span>' +
+        '<div class="preview-thumb"><div class="cover-loading">解析中...</div></div></div>' +
+      '<div class="card-content">' +
+        '<div class="result-title-row"><div class="result-title">解析中...</div>' +
+        '<span class="result-status status-parsing"><span class="spinner"></span> 解析中</span></div>' +
+        '<div class="result-author"><span class="result-platform">' + platformLabel + '</span></div>' +
+      '</div></div>';
+    resultsList.insertAdjacentHTML('beforeend', cardHtml);
+    
+    // Parse
+    var result = await parseSingleLink(links[i].url, i + 1, links[i].author, links[i].textTitle);
+    parseResults.push(result);
+    
+    // Update card
+    renderResultCard(result, cardId);
+    
+    // Auto-extract audio and transcribe for successful results (no manual button click needed)
+    if(result.status === 'success' && result.videoUrl){
+      progressText.textContent = '正在上传视频到服务器提取音频第 ' + (i + 1) + '/' + links.length + ' 个...';
+      try{
+        await extractAudio(result.index);
+      } catch(e){
+        console.error('Auto extract failed for index ' + result.index + ':', e);
+      }
+    }
+    
+    progressFill.style.width = Math.round(((i + 1) / links.length) * 100) + '%';
+  }
+  
+  if(serverOnline){
+    progressText.textContent = '全部完成！视频上传+音频提取+转写已全部自动完成';
+  } else {
+    progressText.textContent = '全部完成！请启动本地转写服务后点击"提取并转写"';
+  }
+  progressFill.style.width = '100%';
+  setTimeout(function(){ progressBar.classList.remove('active'); }, 2000);
+  
+  transcriptBtn.disabled = false;
+  transcriptBtnText.innerHTML = '重新解析';
+  parseBtn.disabled = false;
+  
+  // Auto-collapse tutorial and FAQ after parse
+  autoCollapseSections();
+  
+  // Enable batch download
+  var successCount = parseResults.filter(function(r){ return r.status === 'success'; }).length;
+  if(successCount > 0){
+    var batchBtn = document.getElementById('batchDownloadBtn');
+    batchBtn.classList.add('active');
+    batchBtn.disabled = false;
+  }
+  
+  var completeMsg = serverOnline
+    ? '逐字稿解析完成：' + successCount + ' 个视频已上传服务器，音频提取+转写已自动完成'
+    : '逐字稿解析完成：' + successCount + ' 个视频解析成功，请启动本地转写服务后点击"提取并转写"';
+  showToast(completeMsg, successCount > 0 ? 'success' : 'error');
+}
+
+// ==================== Batch Parse ====================
+async function batchParse(){
+  DP_LIMIT_REACHED = false; DP_LIMIT_TOASTED = false;
+  var textarea = document.getElementById('links');
+  var rawText = textarea.value.trim();
+  
+  if(!rawText){
+    showToast('请先输入视频链接', 'error');
+    return;
+  }
+  
+  var lines = rawText.split(/\n/).map(function(l){ return l.trim(); }).filter(function(l){ return l.length > 0; });
+  var links = [];
+  for(var i = 0; i < lines.length; i++){
+    var url = extractUrl(lines[i]);
+    if(url){
+      // Extract author from pasted text: -博主名|小红书-你的生活兴趣社区
+      var textAuthor = extractAuthorFromText(lines[i]);
+      // Extract title from share text (XHS: 【标题 - 作者 | 小红书...】)
+      var textTitle = extractTitleFromText(lines[i]);
+      links.push({url: url, author: textAuthor, textTitle: textTitle});
+    }
+  }
+  
+  if(links.length === 0){
+    showToast('未检测到有效链接', 'error');
+    return;
+  }
+  
+  if(links.length > 20){
+    links = links.slice(0, 20);
+    showToast('已截取前20个链接', 'error');
+  }
+  
+  // Set mode to batch
+  currentMode = 'batch';
+  
+  // Auto-collapse tutorial and FAQ when parsing starts
+  autoCollapseSections();
+  
+  // Disable parse button
+  var parseBtn = document.getElementById('parseBtn');
+  var parseBtnText = document.getElementById('parseBtnText');
+  parseBtn.disabled = true;
+  parseBtnText.innerHTML = '<span class="spinner"></span> 解析中...';
+  
+  // Also disable transcript button
+  var transcriptBtn = document.getElementById('transcriptBtn');
+  transcriptBtn.disabled = true;
+  
+  // Show progress
+  var progressBar = document.getElementById('progressBar');
+  var progressFill = document.getElementById('progressFill');
+  var progressText = document.getElementById('progressText');
+  progressBar.classList.add('active');
+  
+  // Show results section
+  var resultsSection = document.getElementById('resultsSection');
+  var resultsList = document.getElementById('resultsList');
+  resultsSection.style.display = 'block';
+  resultsList.innerHTML = '';
+  
+  parseResults = [];
+  
+  for(var i = 0; i < links.length; i++){
+    var progress = Math.round((i / links.length) * 100);
+    progressFill.style.width = progress + '%';
+    progressText.textContent = '正在解析第 ' + (i + 1) + '/' + links.length + ' 个链接...';
+    
+    // Create placeholder card
+    var cardId = 'card-' + i;
+    var platform = detectPlatform(links[i].url);
+    var platformLabel = getPlatformLabel(platform);
+    var cardHtml = '<div class="result-card parsing" id="' + cardId + '">' +
+      '<div class="card-media"><span class="card-index">' + (i + 1) + '</span>' +
+        '<div class="preview-thumb"><div class="cover-loading">解析中...</div></div></div>' +
+      '<div class="card-content">' +
+        '<div class="result-title-row"><div class="result-title">解析中...</div>' +
+        '<span class="result-status status-parsing"><span class="spinner"></span> 解析中</span></div>' +
+        '<div class="result-author"><span class="result-platform">' + platformLabel + '</span></div>' +
+      '</div></div>';
+    resultsList.insertAdjacentHTML('beforeend', cardHtml);
+    
+    // Parse
+    var result = await parseSingleLink(links[i].url, i + 1, links[i].author, links[i].textTitle);
+    parseResults.push(result);
+    
+    // Update card
+    renderResultCard(result, cardId);
+    
+    progressFill.style.width = Math.round(((i + 1) / links.length) * 100) + '%';
+  }
+  
+  progressText.textContent = '解析完成！';
+  progressFill.style.width = '100%';
+  setTimeout(function(){ progressBar.classList.remove('active'); }, 2000);
+  
+  parseBtn.disabled = false;
+  parseBtnText.innerHTML = '重新解析';
+  transcriptBtn.disabled = false;
+  
+  // Auto-collapse tutorial and FAQ after parse
+  autoCollapseSections();
+  
+  // Enable batch download
+  var successCount = parseResults.filter(function(r){ return r.status === 'success'; }).length;
+  if(successCount > 0){
+    var batchBtn = document.getElementById('batchDownloadBtn');
+    batchBtn.classList.add('active');
+    batchBtn.disabled = false;
+  }
+  
+  var rcEl = document.getElementById('resultCount');
+  if(rcEl){ rcEl.style.display = 'inline-block'; rcEl.textContent = successCount + ' 成功'; }
+  showToast('解析完成：' + successCount + ' 成功，' + (parseResults.length - successCount) + ' 失败', successCount > 0 ? 'success' : 'error');
+}
+
+function getPlatformLabel(platform){
+  var labels = {
+    'xiaohongshu': '小红书',
+    'douyin': '抖音',
+    'bilibili': 'B站',
+    'kuaishou': '快手',
+    'weibo': '微博',
+    'weixin': '视频号',
+    'tiktok': 'TikTok',
+    'unknown': '未知平台'
+  };
+  return labels[platform] || platform;
+}
+
+// ==================== Render Result Card ====================
+function renderResultCard(result, cardId){
+  var card = document.getElementById(cardId);
+  if(!card) return;
+  
+  var isTranscriptMode = (currentMode === 'transcript');
+  
+  card.className = 'result-card ' + (result.status === 'success' ? 'success' : 'error') + (isTranscriptMode ? ' transcript-mode' : '');
+  
+  var platformLabel = getPlatformLabel(result.platform);
+  var statusClass = result.status === 'success' ? 'status-success' : 'status-error';
+  var statusText = result.status === 'success' ? '解析成功' : '解析失败';
+  if(result.status === 'success' && result.parseSource){
+    statusText = result.parseSource === 'DouParse API' ? 'API解析成功' : 'HTML解析成功';
+  }
+  
+  var titleDisplay = result.title || (result.status === 'error' ? '解析失败' : '无标题');
+  var authorDisplay = result.author || '未知博主';
+  var avatarChar = ((result.author || '?').trim().charAt(0)) || '?';
+  
+  var coverHtml = '';
+  if(result.coverUrl){
+    var clickAction = result.videoUrl 
+      ? 'openVideoModal(\'' + escapeJs(result.videoUrl) + '\', \'' + escapeJs(result.coverUrl) + '\', \'' + escapeJs(titleDisplay) + '\', \'' + escapeJs(authorDisplay) + '\')'
+      : 'openInNewTab(\'' + escapeJs(result.coverUrl) + '\')';
+    coverHtml = '<div class="preview-thumb" onclick="' + clickAction + '">' +
+      '<div class="cover-loading">封面加载中...</div>' +
+      '<img alt="封面" style="display:none" data-cover-url="' + escapeHtml(result.coverUrl) + '">' +
+      (result.videoUrl ? '<div class="play-icon" style="display:none">&#9654;</div>' : '') +
+      '</div>';
+  } else {
+    coverHtml = '<div class="preview-thumb"><div class="no-thumb">暂无封面</div></div>';
+  }
+  
+  var descHtml = '';
+  if(result.desc){
+    descHtml = '<div class="result-desc">' + escapeHtml(result.desc) + '</div>';
+  }
+  
+  // V17: Video/cover link buttons removed
+  
+  var idx = result.index;
+  var downloadHtml = '';
+  if(result.status === 'success'){
+    var isBatch = parseResults.length > 1;
+    var author = result.author;
+    var title = result.title;
+    
+    if(isTranscriptMode){
+      // Transcript mode: show video download + cover download + desc download + transcript area
+      if(result.videoUrl){
+        downloadHtml += '<button class="dl-btn dl-video" id="dlVideoBtn-' + idx + '" onclick="downloadSingle(\'video\', ' + idx + ')">视频</button>';
+      }
+      if(result.coverUrl){
+        downloadHtml += '<button class="dl-btn dl-photo" id="dlPhotoBtn-' + idx + '" onclick="downloadSingle(\'photo\', ' + idx + ')">封面</button>';
+      }
+      downloadHtml += '<button class="dl-btn dl-txt" onclick="downloadSingle(\'txt\', ' + idx + ')">发布文案</button>';
+    } else {
+      // Batch mode: original download buttons
+      if(result.videoUrl){
+        downloadHtml += '<button class="dl-btn dl-video" onclick="downloadSingle(\'video\', ' + idx + ')">视频</button>';
+      }
+      if(result.coverUrl){
+        downloadHtml += '<button class="dl-btn dl-photo" onclick="downloadSingle(\'photo\', ' + idx + ')">封面</button>';
+      }
+      downloadHtml += '<button class="dl-btn dl-txt" onclick="downloadSingle(\'txt\', ' + idx + ')">发布文案</button>';
+    }
+  }
+  
+  downloadHtml += '<button class="edit-btn" onclick="toggleEditForm(' + idx + ')">编辑</button>';
+
+  // 视频号等不支持的平台：显示跳转下载按钮
+  var redirectHtml = '';
+  if(result.status === 'error' && result.redirectUrl){
+    redirectHtml = '<div class="redirect-row"><button class="dl-btn dl-redirect" onclick="window.open(\'' + escapeJs(result.redirectUrl) + '\')">跳转下载视频</button></div>';
+  }
+
+  // 错误提示
+  var errorHtml = '';
+  if(result.status === 'error' && result.error){
+    errorHtml = '<div class="result-error-msg">' + escapeHtml(result.error) + '</div>';
+  }
+  
+  var editFormHtml = '<div class="edit-form" id="editForm-' + idx + '">' +
+    '<div class="form-row"><div class="label-line"><label>博主名称</label><button class="copy-field-btn" onclick="copyFieldValue(\'editAuthor-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editAuthor-' + idx + '" value="' + escapeHtml(result.author || '') + '" placeholder="博主名称"></div></div>' +
+    '<div class="form-row"><div class="label-line"><label>发布标题</label><button class="copy-field-btn" onclick="copyFieldValue(\'editTitle-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editTitle-' + idx + '" value="' + escapeHtml(result.title || '') + '" placeholder="发布标题"></div></div>' +
+    '<div class="form-row"><div class="label-line"><label>发布文案</label><button class="copy-field-btn" onclick="copyFieldValue(\'editDesc-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><textarea id="editDesc-' + idx + '" placeholder="发布文案">' + escapeHtml(result.desc || '') + '</textarea></div></div>' +
+    '<div class="form-row"><div class="label-line"><label>发布标签</label><button class="copy-field-btn" onclick="copyFieldValue(\'editTags-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editTags-' + idx + '" value="' + escapeHtml((result.tags || []).join(' ')) + '" placeholder="#标签1 #标签2"></div></div>' +
+    '<div class="form-row"><div class="label-line"><label>视频链接</label><button class="copy-field-btn" onclick="copyFieldValue(\'editVideoUrl-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editVideoUrl-' + idx + '" value="' + escapeHtml(result.videoUrl || '') + '" placeholder="视频链接"></div></div>' +
+    '<div class="form-row"><div class="label-line"><label>封面链接</label><button class="copy-field-btn" onclick="copyFieldValue(\'editCoverUrl-' + idx + '\')" title="复制">复制</button></div><div class="field-wrap"><input type="text" id="editCoverUrl-' + idx + '" value="' + escapeHtml(result.coverUrl || '') + '" placeholder="封面链接"></div></div>' +
+    '<div class="edit-form-actions">' +
+      '<button class="save" onclick="saveEdit(' + idx + ')">保存</button>' +
+      '<button class="cancel" onclick="toggleEditForm(' + idx + ')">取消</button>' +
+    '</div></div>';
+  
+  // Transcript mode extra section
+  var transcriptHtml = '';
+  if(isTranscriptMode && result.status === 'success' && result.videoUrl){
+      transcriptHtml = '<div class="transcript-section" id="transcriptSection-' + idx + '">' +
+        '<div class="transcript-section-title">&#127908; 逐字稿提取</div>' +
+        '<div class="audio-extract-row">' +
+          '<button class="dl-btn dl-audio" id="extractAudioBtn-' + idx + '" onclick="extractAudio(' + idx + ')"><span class="icon">&#127925;</span> 提取并转写</button>' +
+          '<button class="dl-btn dl-transcript" id="onlineTranscribeBtn-' + idx + '" style="display:none" onclick="openOnlineTranscribe(' + idx + ')"><span class="icon">&#127760;</span> 在线转写</button>' +
+        '</div>' +
+        '<div class="audio-progress" id="audioProgress-' + idx + '">' +
+          '<div class="audio-progress-track"><div class="audio-progress-fill" id="audioProgressFill-' + idx + '"></div></div>' +
+          '<div class="audio-progress-text" id="audioProgressText-' + idx + '">点击"提取并转写"按钮开始</div>' +
+        '</div>' +
+        '<div class="transcribe-progress" id="transcribeProgress-' + idx + '">' +
+          '<div class="label"><span class="spinner"></span> <span id="transcribeStatusText-' + idx + '">等待转写...</span></div>' +
+        '</div>' +
+        '<div class="transcript-input-area">' +
+          '<label>转写结果（可编辑后下载TXT）</label>' +
+          '<textarea class="transcript-textarea" id="transcriptText-' + idx + '" placeholder="提取音频后将自动转写，结果会显示在此处。也可点击"在线转写"手动操作..."></textarea>' +
+          '<div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap">' +
+            '<button class="dl-btn dl-transcript" onclick="downloadTranscriptTxt(' + idx + ')">生成逐字稿TXT</button>' +
+            '<button class="dl-btn dl-copy" onclick="copyTranscriptTxt(' + idx + ')"><span class="icon">&#128203;</span> 复制</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+  
+  // V18: tag chips (yellow) — 最多显示5个，超出显示 +N 更多
+  var tagsHtml = '';
+  if(result.tags && result.tags.length){
+    var displayTags = result.tags.slice(0, 5);
+    var extraCount = result.tags.length - 5;
+    tagsHtml = '<div class="result-tags">' + displayTags.map(function(t){
+      return '<span class="tag-chip">' + escapeHtml(t) + '</span>';
+    }).join('') +
+    (extraCount > 0 ? '<span class="tag-chip tag-more">+' + extraCount + '</span>' : '') +
+    '</div>';
+  }
+
+  // V18: source chip text
+  var srcChip = platformLabel;
+  if(result.status === 'success' && result.parseSource){
+    srcChip = result.parseSource === 'DouParse API' ? 'DouParse' : '本地解析';
+  }
+
+  card.innerHTML =
+  '<div class="card-media' + (result.status === 'error' ? ' has-error' : '') + (isTranscriptMode ? ' transcribing' : '') + '">' +
+    '<span class="card-chip">' + escapeHtml(srcChip) + '</span>' +
+    '<span class="card-index">' + idx + '</span>' +
+    coverHtml +
+  '</div>' +
+  '<div class="card-content">' +
+    '<div class="result-title-row">' +
+      '<div class="result-title">' + escapeHtml(titleDisplay) + '</div>' +
+      '<span class="result-status ' + statusClass + '">' + statusText + '</span>' +
+    '</div>' +
+    '<div class="result-author">' +
+      '<span class="avatar">' + escapeHtml(avatarChar) + '</span>' +
+      '<span class="author-name">' + escapeHtml(authorDisplay) + '</span>' +
+      '<span class="result-platform">' + platformLabel + '</span>' +
+    '</div>' +
+    descHtml +
+    tagsHtml +
+    errorHtml +
+    redirectHtml +
+    '<div class="download-row">' + downloadHtml + '</div>' +
+    '<div class="download-progress" id="downloadProgress-' + idx + '">' +
+      '<div class="download-progress-track"><div class="download-progress-fill" id="downloadProgressFill-' + idx + '"></div></div>' +
+      '<div class="download-progress-text" id="downloadProgressText-' + idx + '"></div>' +
+    '</div>' +
+    transcriptHtml +
+    editFormHtml +
+  '</div>';
+  
+  // Async load cover image via fetch (bypass anti-hotlink)
+  if(result.coverUrl){
+    var coverImg = card.querySelector('.preview-thumb img[data-cover-url]');
+    if(coverImg){
+      loadCoverImageAsync(coverImg, result.coverUrl);
+    }
+  }
+}
+
+// ==================== Async Cover Image Loader ====================
+// Bypasses anti-hotlink by fetching image as blob via proxy chain
+async function loadCoverImageAsync(img, url){
+  var thumb = img.parentElement;
+  var loadingEl = thumb.querySelector('.cover-loading');
+  var playIcon = thumb.querySelector('.play-icon');
+  
+  function showImage(src){
+    img.src = src;
+    img.style.display = 'block';
+    if(loadingEl) loadingEl.remove();
+    if(playIcon) playIcon.style.display = 'flex';
+  }
+  
+  function showFallback(){
+    if(loadingEl) loadingEl.remove();
+    img.style.display = 'none';
+    if(playIcon) playIcon.style.display = 'none';
+    if(!thumb.querySelector('.no-thumb')){
+      thumb.insertAdjacentHTML('beforeend', '<div class="no-thumb">封面加载失败</div>');
+    }
+  }
+  
+  // Strategy 1: Direct fetch with no-referrer
+  try{
+    var resp = await fetchWithTimeout(url, {method:'GET', referrerPolicy:'no-referrer'}, 10000);
+    if(resp.ok){
+      var blob = await resp.blob();
+      if(blob.size > 100){
+        showImage(URL.createObjectURL(blob));
+        return;
+      }
+    }
+  }catch(e){}
+  
+  // Strategy 2: Try CORS proxies to fetch image blob
+  for(var i = 0; i < CORS_PROXIES.length; i++){
+    try{
+      var proxyUrl = CORS_PROXIES[i](url);
+      var resp2 = await fetchWithTimeout(proxyUrl, {method:'GET'}, 10000);
+      if(resp2.ok){
+        var blob2 = await resp2.blob();
+        if(blob2.size > 100){
+          showImage(URL.createObjectURL(blob2));
+          return;
+        }
+      }
+    }catch(e){ continue; }
+  }
+  
+  // Strategy 3: Try direct img load with no-referrer as last resort
+  try{
+    var testImg = new Image();
+    testImg.referrerPolicy = 'no-referrer';
+    var loaded = await new Promise(function(resolve, reject){
+      testImg.onload = function(){ resolve(true); };
+      testImg.onerror = function(){ reject(new Error('img load failed')); };
+      testImg.src = url;
+    });
+    if(loaded){
+      img.referrerPolicy = 'no-referrer';
+      showImage(url);
+      return;
+    }
+  }catch(e){}
+  
+  // All strategies failed
+  showFallback();
+}
+
+function escapeHtml(str){
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function escapeJs(str){
+  if(!str) return '';
+  return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');
+}
+
+function openInNewTab(url){
+  window.open(url, '_blank');
+}
+
+// ==================== Video Preview Modal ====================
+function openVideoModal(videoUrl, coverUrl, title, author){
+  var modal = document.getElementById('videoModal');
+  var player = document.getElementById('videoPlayer');
+  var info = document.getElementById('videoModalInfo');
+  
+  if(!videoUrl){
+    showToast('无视频链接可预览', 'error');
+    return;
+  }
+  
+  player.src = videoUrl;
+  player.poster = coverUrl || '';
+  info.textContent = (author || '未知博主') + ' - ' + (title || '无标题');
+  modal.classList.add('active');
+}
+
+function closeVideoModal(e){
+  if(e && e.target !== document.getElementById('videoModal')) return;
+  var modal = document.getElementById('videoModal');
+  var player = document.getElementById('videoPlayer');
+  player.pause();
+  player.src = '';
+  modal.classList.remove('active');
+}
+
+// ==================== Collapsible Sections ====================
+function toggleCollapse(sectionId){
+  var section = document.getElementById(sectionId);
+  if(section){
+    section.classList.toggle('collapsed');
+  }
+}
+
+function autoCollapseSections(){
+  var tutorial = document.getElementById('tutorialSection');
+  var faq = document.getElementById('faqSection');
+  if(tutorial) tutorial.classList.add('collapsed');
+  if(faq) faq.classList.add('collapsed');
+}
+
+// ==================== Usage Help Modal ====================
+function openHelp(tab){
+  var m = document.getElementById('helpModal');
+  if(m){ m.classList.add('active'); if(tab) switchHelpTab(tab); }
+}
+function closeHelp(){
+  var m = document.getElementById('helpModal');
+  if(m) m.classList.remove('active');
+}
+function switchHelpTab(tab){
+  var tabs = ['quick', 'guide', 'faq'];
+  for(var i = 0; i < tabs.length; i++){
+    var pane = document.getElementById('helpTab-' + tabs[i]);
+    var btn = document.getElementById('helpTabBtn-' + tabs[i]);
+    if(pane) pane.style.display = (tabs[i] === tab) ? 'block' : 'none';
+    if(btn) btn.className = (tabs[i] === tab) ? 'active' : '';
+  }
+}
+
+// ==================== Edit Form ====================
+function toggleEditForm(idx){
+  var form = document.getElementById('editForm-' + idx);
+  if(form){
+    form.classList.toggle('active');
+  }
+}
+
+function copyFieldValue(fieldId){
+  var el = document.getElementById(fieldId);
+  if(!el){ showToast('字段不存在', 'error'); return; }
+  var val = el.value || el.textContent || '';
+  navigator.clipboard.writeText(val).then(function(){
+    showToast('已复制到剪贴板', 'success');
+  }).catch(function(){
+    var ta = document.createElement('textarea');
+    ta.value = val;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('已复制到剪贴板', 'success');
+  });
+}
+
+function processTextContent(text){
+  if(!text) return {text: '', tags: []};
+  var cleaned = text;
+  var tags = [];
+
+  // Step 1: Extract #xxx[话题]# tags (Xiaohongshu format) anywhere in text
+  var topicTagRegex = /#[^#]+?\[话题\]#/g;
+  var match;
+  while ((match = topicTagRegex.exec(text)) !== null) {
+    var cleanTag = '#' + match[0].replace(/\[话题\]/g, '').replace(/^#/, '').replace(/#$/g, '').trim();
+    if(cleanTag.length > 1) tags.push(cleanTag);
+  }
+  cleaned = cleaned.replace(topicTagRegex, ' ');
+
+  // Step 2: For remaining text, split at first # to separate desc from tags
+  var firstHashIndex = cleaned.indexOf('#');
+  var descPart = firstHashIndex >= 0 ? cleaned.substring(0, firstHashIndex).trim() : cleaned.trim();
+  var tagsPart = firstHashIndex >= 0 ? cleaned.substring(firstHashIndex) : '';
+
+  // Step 3: Extract #xxx tags from tagsPart
+  var tagMatches = tagsPart.match(/#\S+/g);
+  if(tagMatches){
+    tagMatches.forEach(function(t){
+      if(t.length > 1) tags.push(t.trim());
+    });
+  }
+
+  // Step 4: Clean up remaining [话题] marks; preserve paragraph line breaks
+  descPart = descPart.replace(/\[话题\]/g, ' ')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  return {text: descPart, tags: tags};
+}
+
+function splitDescAndTags(text){
+  if(!text) return {desc: '', tags: []};
+  var cleaned = text;
+  var tags = [];
+
+  // Step 1: Extract #xxx[话题]# tags (Xiaohongshu format) anywhere in text
+  var topicTagRegex = /#[^#]+?\[话题\]#/g;
+  var match;
+  while ((match = topicTagRegex.exec(text)) !== null) {
+    var cleanTag = '#' + match[0].replace(/\[话题\]/g, '').replace(/^#/, '').replace(/#$/g, '').trim();
+    if(cleanTag.length > 1) tags.push(cleanTag);
+  }
+  cleaned = cleaned.replace(topicTagRegex, ' ');
+
+  // Step 2: For remaining text, split at first # to separate desc from tags
+  var firstHashIndex = cleaned.indexOf('#');
+  var descPart = firstHashIndex >= 0 ? cleaned.substring(0, firstHashIndex).trim() : cleaned.trim();
+  var tagsPart = firstHashIndex >= 0 ? cleaned.substring(firstHashIndex) : '';
+
+  // Step 3: Extract #xxx tags from tagsPart
+  var tagMatches = tagsPart.match(/#\S+/g);
+  if(tagMatches){
+    tagMatches.forEach(function(t){
+      if(t.length > 1) tags.push(t.trim());
+    });
+  }
+
+  // Step 4: Clean up remaining [话题] marks; preserve paragraph line breaks
+  descPart = descPart.replace(/\[话题\]/g, ' ')
+    .replace(/\r\n?/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  return {desc: descPart, tags: tags};
+}
+
+function saveEdit(idx){
+  var result = parseResults.find(function(r){ return r.index === idx; });
+  if(!result) return;
+  
+  var author = document.getElementById('editAuthor-' + idx).value.trim();
+  var rawTitle = document.getElementById('editTitle-' + idx).value.trim();
+  var rawDesc = document.getElementById('editDesc-' + idx).value.trim();
+  var tagsInput = document.getElementById('editTags-' + idx).value.trim();
+  
+  // Process title: clean [话题] and platform suffixes, extract #tags, remove tags from text
+  var titleProcessed = {text: cleanTitleText(rawTitle) || rawTitle.replace(/\[话题\]/g, ' ').replace(/\s+/g, ' ').trim(), tags: []};
+  var descProcessed = processTextContent(rawDesc);
+  
+  // Merge tags from title, desc, and manual input
+  var allTags = titleProcessed.tags.concat(descProcessed.tags);
+  if(tagsInput){
+    var manualTags = tagsInput.match(/#\S+/g);
+    if(manualTags) allTags = allTags.concat(manualTags);
+  }
+  // Deduplicate
+  var uniqueTags = [];
+  allTags.forEach(function(t){ if(uniqueTags.indexOf(t) === -1) uniqueTags.push(t); });
+  
+  result.author = author;
+  result.title = titleProcessed.text;
+  result.desc = descProcessed.text;
+  result.tags = uniqueTags;
+  result.videoUrl = document.getElementById('editVideoUrl-' + idx).value.trim();
+  result.coverUrl = document.getElementById('editCoverUrl-' + idx).value.trim();
+  result.status = 'success';
+  result.error = null;
+  
+  var cardId = 'card-' + (idx - 1);
+  renderResultCard(result, cardId);
+  
+  // Re-enable batch download
+  var successCount = parseResults.filter(function(r){ return r.status === 'success'; }).length;
+  if(successCount > 0){
+    var batchBtn = document.getElementById('batchDownloadBtn');
+    batchBtn.classList.add('active');
+    batchBtn.disabled = false;
+  }
+  
+  showToast('已保存编辑内容', 'success');
+}
+
+// ==================== Audio Extract & Transcript Functions ====================
+var audioBlobs = {}; // Store extracted audio blobs by result index
+var extractRunning = false;
+
+// ==================== V11: Local Transcription Server ====================
+var SERVER_URL = 'http://localhost:8765';
+var serverOnline = false;
+var serverBackend = '';
+var serverModel = '';
+
+async function checkServerStatus(){
+  try{
+    var resp = await fetchWithTimeout(SERVER_URL + '/api/health', {method:'GET'}, 3000);
+    if(resp.ok){
+      var data = await resp.json();
+      if(data.status === 'ok'){
+        serverOnline = true;
+        serverBackend = data.backend || '';
+        serverModel = data.model || '';
+        updateServerUI(true);
+        return true;
+      }
+    }
+  } catch(e){}
+  serverOnline = false;
+  updateServerUI(false);
+  return false;
+}
+
+function updateServerUI(online){
+  // Update status badges
+  var badges = document.querySelectorAll('.server-status');
+  for(var i = 0; i < badges.length; i++){
+    if(online){
+      badges[i].className = 'server-status online';
+      badges[i].innerHTML = '<span class="dot"></span> 本地转写服务已连接 (' + serverBackend + ' / ' + serverModel + ')';
+    } else {
+      badges[i].className = 'server-status offline';
+      badges[i].innerHTML = '<span class="dot"></span> 本地转写服务未连接';
+    }
+  }
+  // Update banners
+  var banners = document.querySelectorAll('.server-banner');
+  for(var i = 0; i < banners.length; i++){
+    if(online){
+      banners[i].className = 'server-banner online';
+      banners[i].innerHTML = '<span>&#9989;</span> 本地转写服务器已连接 — 音频转写将全自动完成（' + serverBackend + ' / ' + serverModel + '）';
+    } else {
+      banners[i].className = 'server-banner offline';
+      banners[i].innerHTML = '<span>&#9888;</span> 本地转写服务未启动 — 运行 <a onclick="showServerHelp()">transcribe_server.py</a> 启用全自动转写，或使用"在线转写"手动模式';
+    }
+  }
+  // Update visible buttons on existing cards
+  for(var i = 0; i < parseResults.length; i++){
+    var idx = parseResults[i].index;
+    var onlineBtn = document.getElementById('onlineTranscribeBtn-' + idx);
+    if(onlineBtn){
+      onlineBtn.style.display = online ? 'none' : 'inline-flex';
+    }
+  }
+}
+
+function showServerHelp(){
+  // First check if server is already running — if so, open browser directly without modal
+  fetch(SERVER_URL + '/api/health', {method:'GET'})
+    .then(function(r){
+      if(!r.ok) throw new Error('Server not running');
+      return r.json();
+    })
+    .then(function(data){
+      if(data.status === 'ok'){
+        // Server is running — open browser directly, no modal needed
+        window.open(SERVER_URL, '_blank');
+        showToast('本地转写服务已启动，正在打开浏览器...', 'success');
+      } else {
+        throw new Error('Server not ready');
+      }
+    })
+    .catch(function(){
+      // Server not running — fall back to server-info for detailed help modal
+      fetch(SERVER_URL + '/api/server-info', {method:'GET'})
+        .then(function(r){
+          if(!r.ok) throw new Error('Server not running');
+          return r.json();
+        })
+        .then(function(data){
+          if(data.script_path){
+            openServerHelpModal(data.script_path, data.script_dir);
+          } else {
+            openServerHelpModal(null, null);
+          }
+        })
+        .catch(function(){
+          openServerHelpModal(null, null);
+        });
+    });
+}
+
+function openServerHelpModal(scriptPath, scriptDir){
+  var modal = document.getElementById('serverHelpModal');
+  var cmdPre = document.getElementById('serverHelpCmd');
+  var tipEl = document.getElementById('serverHelpTip');
+  var cmd = '';
+  var tip = '';
+  if(scriptPath && scriptDir){
+    cmd = 'cd /d "' + scriptDir + '"\r\npython transcribe_server.py';
+    tip = '服务器已在运行中！上面的命令可直接复制使用。文件位置：<code>' + scriptPath + '</code>';
+  } else {
+    cmd = 'cd /d "C:\\VideoParser"\r\npython transcribe_server.py';
+    tip = '请把 <code style="color:var(--primary);font-weight:600;">transcribe_server.py</code> 和本HTML放在同一文件夹，然后复制上方命令到CMD运行。';
+  }
+  cmdPre.textContent = cmd;
+  tipEl.innerHTML = tip;
+  var copyBtn = document.getElementById('serverHelpCopyBtn');
+  copyBtn.textContent = '复制命令';
+  copyBtn.classList.remove('copied');
+  modal.classList.add('active');
+}
+
+function closeServerHelpModal(){
+  document.getElementById('serverHelpModal').classList.remove('active');
+}
+
+function copyServerHelpCmd(){
+  var cmdPre = document.getElementById('serverHelpCmd');
+  var cmd = cmdPre.textContent;
+  navigator.clipboard.writeText(cmd).then(function(){
+    var copyBtn = document.getElementById('serverHelpCopyBtn');
+    copyBtn.textContent = '已复制';
+    copyBtn.classList.add('copied');
+    showToast('启动命令已复制到剪贴板，粘贴到 CMD 运行即可', 'success');
+  }).catch(function(){
+    var textarea = document.createElement('textarea');
+    textarea.value = cmd;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    var copyBtn = document.getElementById('serverHelpCopyBtn');
+    copyBtn.textContent = '已复制';
+    copyBtn.classList.add('copied');
+    showToast('启动命令已复制到剪贴板', 'success');
+  });
+}
+
+// Send audio to local server for transcription
+async function localTranscribe(idx){
+  var result = parseResults.find(function(r){ return r.index === idx; });
+  if(!result){ showToast('未找到数据', 'error'); return; }
+  if(!audioBlobs[idx]){ showToast('请先提取音频', 'error'); return; }
+  if(!serverOnline){ showToast('本地转写服务未连接，请先运行 transcribe_server.py', 'error'); return; }
+
+  var audioData = audioBlobs[idx];
+  var localBtn = document.getElementById('localTranscribeBtn-' + idx);
+  var progressEl = document.getElementById('transcribeProgress-' + idx);
+  var statusText = document.getElementById('transcribeStatusText-' + idx);
+  var textarea = document.getElementById('transcriptText-' + idx);
+
+  if(localBtn) localBtn.disabled = true;
+  if(progressEl){ progressEl.className = 'transcribe-progress active'; }
+  if(statusText){ statusText.textContent = '正在上传音频到本地服务器...'; }
+
+  try{
+    // Upload audio file
+    var formData = new FormData();
+    var ext = audioData.ext || 'webm';
+    var filename = 'audio_' + idx + '.' + ext;
+    formData.append('audio', audioData.blob, filename);
+    formData.append('language', 'zh');
+
+    var resp = await fetchWithTimeout(SERVER_URL + '/api/transcribe', {
+      method: 'POST',
+      body: formData
+    }, 300000); // 5 min timeout
+
+    if(!resp.ok) throw new Error('服务器返回错误: ' + resp.status);
+    var data = await resp.json();
+    var taskId = data.task_id;
+
+    if(statusText) statusText.textContent = '服务器正在转写... (模型: ' + serverModel + ')';
+
+    // Poll for result
+    var pollCount = 0;
+    var maxPolls = 300; // 10 minutes max
+    while(pollCount < maxPolls){
+      await new Promise(function(r){ setTimeout(r, 2000); });
+      pollCount++;
+
+      var statusResp = await fetchWithTimeout(SERVER_URL + '/api/tasks/' + taskId, {method:'GET'}, 10000);
+      if(!statusResp.ok) continue;
+      var task = await statusResp.json();
+
+      if(task.status === 'completed'){
+        if(textarea){
+          textarea.value = task.text;
+          textarea.placeholder = '';
+        }
+        if(progressEl){
+          progressEl.className = 'transcribe-progress active completed';
+        }
+        if(statusText){
+          var dur = task.duration ? Math.round(task.duration) + '秒' : '';
+          statusText.textContent = '转写完成! ' + dur + ' | ' + task.text.length + '字';
+        }
+        if(localBtn){ localBtn.disabled = false; localBtn.innerHTML = '<span class="icon">&#9889;</span> 重新转写'; }
+        showToast('本地转写完成! ' + task.text.length + ' 字', 'success');
+        return;
+      } else if(task.status === 'failed'){
+        throw new Error(task.error || '转写失败');
+      } else if(task.status === 'processing'){
+        if(statusText) statusText.textContent = '正在转写... ' + (pollCount * 2) + '秒';
+      }
+    }
+    throw new Error('转写超时');
+  } catch(e){
+    console.error('Local transcribe error:', e);
+    if(progressEl){
+      progressEl.className = 'transcribe-progress active failed';
+      var localRetry = progressEl.querySelector('.retry-btn');
+      if(!localRetry){
+        var retryBtn = document.createElement('button');
+        retryBtn.className = 'retry-btn';
+        retryBtn.innerHTML = '&#128260; 重新转写';
+        retryBtn.onclick = function(){ localTranscribe(idx); };
+        progressEl.appendChild(retryBtn);
+      }
+    }
+    if(statusText) statusText.innerHTML = '转写失败: ' + escapeHtml(e.message);
+    if(localBtn){ localBtn.disabled = false; }
+    showToast('本地转写失败: ' + e.message + '，可点击"重新转写"重试', 'error', 5000);
+  }
+}
+
+// ==================== Global AudioContext Management ====================
+// AudioContext must be created/resumed within a user gesture context,
+// otherwise it stays "suspended" and the audio pipeline has no data flow.
+var globalAudioCtx = null;
+
+function ensureAudioCtx(){
+  if(!globalAudioCtx || globalAudioCtx.state === 'closed'){
+    var AudioCtx = window.AudioContext || window.webkitAudioContext;
+    globalAudioCtx = new AudioCtx();
+  }
+  if(globalAudioCtx.state === 'suspended'){
+    globalAudioCtx.resume();
+  }
+  return globalAudioCtx;
+}
+
+// ==================== Online Transcription Helper (fallback when server offline) ====================
+function openOnlineTranscribe(idx){
+  var result = parseResults.find(function(r){ return r.index === idx; });
+  if(!result){
+    showToast('未找到数据', 'error');
+    return;
+  }
+  
+  if(!result.videoUrl){
+    showToast('无视频链接', 'error');
+    return;
+  }
+  
+  // Download video file for manual audio extraction
+  downloadSingle('video', idx);
+  
+  // Open online transcription tools in new tabs
+  var tools = [
+    {name: '通义听悟', url: 'https://tingwu.aliyun.com/home'},
+    {name: '讯飞听见', url: 'https://www.iflyrec.com/html/convert.html'}
+  ];
+  
+  // Open the first tool (通义听悟) in a new tab
+  window.open(tools[0].url, '_blank');
+  
+  showToast('视频已下载，已打开通义听悟。请先从视频中提取音频（可用格式工厂等工具），再上传转写', 'success');
+  
+  // Update the transcript textarea placeholder with instructions
+  var textarea = document.getElementById('transcriptText-' + idx);
+  if(textarea && !textarea.value){
+    textarea.placeholder = '>> 操作步骤：\n1. 视频文件已自动下载\n2. 用格式工厂/Audacity等工具从视频提取音频\n3. 在刚打开的通义听悟页面中点击"上传文件"\n4. 选择刚才提取的音频文件\n5. 等待转写完成\n6. 复制转写结果\n7. 粘贴到此处\n8. 点击下方"生成逐字稿TXT"';
+  }
+}
+
+async function extractAudio(idx){
+  if(extractRunning){
+    showToast('请等待当前任务完成', 'error');
+    return;
+  }
+  
+  var result = parseResults.find(function(r){ return r.index === idx; });
+  if(!result || !result.videoUrl){
+    showToast('无视频链接可提取音频', 'error');
+    return;
+  }
+  
+  if(!serverOnline){
+    showToast('本地转写服务未连接，请先运行 transcribe_server.py', 'error');
+    return;
+  }
+  
+  extractRunning = true;
+  
+  var extractBtn = document.getElementById('extractAudioBtn-' + idx);
+  var downloadBtn = document.getElementById('downloadAudioBtn-' + idx);
+  var onlineBtn = document.getElementById('onlineTranscribeBtn-' + idx);
+  var localBtn = document.getElementById('localTranscribeBtn-' + idx);
+  var progressEl = document.getElementById('audioProgress-' + idx);
+  var progressFillEl = document.getElementById('audioProgressFill-' + idx);
+  var progressTextEl = document.getElementById('audioProgressText-' + idx);
+  var transcribeProgressEl = document.getElementById('transcribeProgress-' + idx);
+  var statusText = document.getElementById('transcribeStatusText-' + idx);
+  var textarea = document.getElementById('transcriptText-' + idx);
+  
+  if(!extractBtn){ extractRunning = false; return; }
+  
+  extractBtn.disabled = true;
+  extractBtn.innerHTML = '<span class="spinner"></span> 处理中...';
+  progressEl.classList.add('active');
+  if(transcribeProgressEl){
+    transcribeProgressEl.className = 'transcribe-progress active';
+    // Remove any existing retry button
+    var oldRetry = transcribeProgressEl.querySelector('.retry-btn');
+    if(oldRetry) oldRetry.remove();
+  }
+  progressTextEl.textContent = '正在下载视频文件...';
+  progressFillEl.style.width = '5%';
+  if(statusText) statusText.textContent = '准备中...';
+  
+  try{
+    // Step 1: Download video file
+    var videoData = await fetchFileData(result.videoUrl);
+    if(!videoData){
+      throw new Error('视频下载失败');
+    }
+    
+    var videoSize = (videoData.byteLength / 1024 / 1024).toFixed(1);
+    progressFillEl.style.width = '20%';
+    progressTextEl.textContent = '视频下载完成 (' + videoSize + 'MB)，正在上传到服务器...';
+    if(statusText) statusText.textContent = '上传视频中...';
+    
+    // Step 2: Upload video to backend - FFmpeg extracts audio + Whisper transcribes
+    var videoBlob = new Blob([videoData]);
+    var videoExt = 'mp4';
+    try { videoExt = (result.videoUrl.split('.').pop() || 'mp4').split('?')[0].substring(0, 5); } catch(e){}
+    var formData = new FormData();
+    formData.append('video', videoBlob, 'video_' + idx + '.' + videoExt);
+    formData.append('language', 'zh');
+    
+    var resp = await fetchWithTimeout(SERVER_URL + '/api/extract-and-transcribe', {
+      method: 'POST',
+      body: formData
+    }, 300000);
+    
+    if(!resp.ok) throw new Error('服务器返回错误: ' + resp.status);
+    var data = await resp.json();
+    var taskId = data.task_id;
+    
+    progressFillEl.style.width = '35%';
+    progressTextEl.textContent = '服务器正在处理...';
+    
+    // Step 3: Poll for result
+    var pollCount = 0;
+    var maxPolls = 600; // 20 minutes max
+    
+    while(pollCount < maxPolls){
+      await new Promise(function(r){ setTimeout(r, 2000); });
+      pollCount++;
+      
+      var statusResp = await fetchWithTimeout(SERVER_URL + '/api/tasks/' + taskId, {method:'GET'}, 10000);
+      if(!statusResp.ok) continue;
+      var task = await statusResp.json();
+      
+      if(task.status === 'extracting'){
+        progressFillEl.style.width = '45%';
+        progressTextEl.textContent = '正在提取音频... ' + (pollCount * 2) + '秒';
+        if(statusText) statusText.textContent = 'FFmpeg 提取音频中...';
+      } else if(task.status === 'processing'){
+        progressFillEl.style.width = '65%';
+        progressTextEl.textContent = '正在转写... ' + (pollCount * 2) + '秒';
+        if(statusText) statusText.textContent = 'Whisper 转写中...';
+      } else if(task.status === 'completed'){
+        if(textarea){
+          textarea.value = task.text;
+          textarea.placeholder = '';
+        }
+        progressFillEl.style.width = '100%';
+        var dur = task.duration ? Math.round(task.duration) + '秒 | ' : '';
+        progressTextEl.textContent = '完成! ' + dur + task.text.length + '字';
+        if(statusText) statusText.textContent = '转写完成! ' + task.text.length + '字';
+        if(transcribeProgressEl){
+          transcribeProgressEl.className = 'transcribe-progress active completed';
+          var successRetry = transcribeProgressEl.querySelector('.retry-btn');
+          if(successRetry) successRetry.remove();
+        }
+        extractBtn.innerHTML = '&#127925; 重新提取';
+        extractBtn.disabled = false;
+        extractRunning = false;
+        showToast('视频音频提取+转写完成! ' + task.text.length + ' 字', 'success');
+        return;
+      } else if(task.status === 'failed'){
+        throw new Error(task.error || '转写失败');
+      }
+    }
+    throw new Error('转写超时');
+    
+  } catch(e){
+    console.error('Extract and transcribe error:', e);
+    progressTextEl.textContent = '处理失败: ' + e.message;
+    progressFillEl.style.width = '0';
+    if(statusText) statusText.innerHTML = '失败: ' + escapeHtml(e.message);
+    if(transcribeProgressEl){
+      transcribeProgressEl.className = 'transcribe-progress active failed';
+      // Add retry button if not already present
+      var existingRetry = transcribeProgressEl.querySelector('.retry-btn');
+      if(!existingRetry){
+        var retryBtn = document.createElement('button');
+        retryBtn.className = 'retry-btn';
+        retryBtn.innerHTML = '&#128260; 重新转写';
+        retryBtn.onclick = function(){ extractAudio(idx); };
+        transcribeProgressEl.appendChild(retryBtn);
+      }
+    }
+    extractBtn.innerHTML = '&#127925; 重新提取';
+    extractBtn.disabled = false;
+    extractRunning = false;
+    showToast('处理失败: ' + e.message + '，可点击"重新转写"重试', 'error', 5000);
+  }
+}
+
+function downloadAudio(idx){
+  // V12: Audio extraction is handled by backend. This function is kept for compatibility.
+  showToast('V12版本中音频由服务器直接处理，无需单独下载', 'info');
+}
+
+function downloadTranscriptTxt(idx){
+  var result = parseResults.find(function(r){ return r.index === idx; });
+  if(!result){
+    showToast('未找到数据', 'error');
+    return;
+  }
+  
+  var textarea = document.getElementById('transcriptText-' + idx);
+  var transcriptText = textarea ? textarea.value.trim() : '';
+  
+  if(!transcriptText){
+    showToast('请先提取音频并粘贴转写结果', 'error');
+    return;
+  }
+  
+  var lines = [];
+  lines.push('==== 逐字稿 ====');
+  lines.push('发布平台：' + getPlatformLabel(result.platform));
+  lines.push('博主名称：' + (result.author || '未知'));
+  lines.push('发布标题：' + (result.title || '无标题'));
+  if(result.tags && result.tags.length > 0){
+    lines.push('发布标签：' + result.tags.join(' '));
+  }
+  lines.push('原文链接：' + (result.originalUrl || ''));
+  lines.push('生成时间：' + new Date().toLocaleString('zh-CN'));
+  lines.push('');
+  lines.push('==== 转写内容 ====');
+  lines.push(transcriptText);
+
+  var content = lines.join('\n');
+  var filename = generateFileName('Transcript', idx, result.author, result.title, 'txt', false);
+
+  downloadBlob(new Blob([content], {type:'text/plain;charset=utf-8'}), filename);
+}
+
+function copyTranscriptTxt(idx){
+  var result = parseResults.find(function(r){ return r.index === idx; });
+  if(!result){
+    showToast('未找到数据', 'error');
+    return;
+  }
+
+  var textarea = document.getElementById('transcriptText-' + idx);
+  var transcriptText = textarea ? textarea.value.trim() : '';
+
+  if(!transcriptText){
+    showToast('请先提取音频并粘贴转写结果', 'error');
+    return;
+  }
+
+  var lines = [];
+  lines.push('==== 逐字稿 ====');
+  lines.push('发布平台：' + getPlatformLabel(result.platform));
+  lines.push('博主名称：' + (result.author || '未知'));
+  lines.push('发布标题：' + (result.title || '无标题'));
+  if(result.tags && result.tags.length > 0){
+    lines.push('发布标签：' + result.tags.join(' '));
+  }
+  lines.push('原文链接：' + (result.originalUrl || ''));
+  lines.push('生成时间：' + new Date().toLocaleString('zh-CN'));
+  lines.push('');
+  lines.push('==== 转写内容 ====');
+  lines.push(transcriptText);
+  
+  var content = lines.join('\n');
+  
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(content).then(function(){
+      showToast('逐字稿已复制到剪贴板', 'success');
+    }).catch(function(){
+      fallbackCopyText(content);
+    });
+  } else {
+    fallbackCopyText(content);
+  }
+}
+
+function fallbackCopyText(text){
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('逐字稿已复制到剪贴板', 'success');
+  } catch(e) {
+    showToast('复制失败，请手动选择文本复制', 'error');
+  }
+  document.body.removeChild(ta);
+}
+
+// ==================== Download Functions ====================
+async function downloadSingle(type, idx){
+  var result = parseResults.find(function(r){ return r.index === idx; });
+  if(!result){
+    showToast('未找到数据', 'error');
+    return;
+  }
+  
+  var isBatch = false;
+  var filename, url, content;
+  
+  // Get progress bar elements
+  var progEl = document.getElementById('downloadProgress-' + idx);
+  var progFill = document.getElementById('downloadProgressFill-' + idx);
+  var progText = document.getElementById('downloadProgressText-' + idx);
+  
+  // Progress callback
+  var onProgress = function(percent, text){
+    if(progEl) progEl.classList.add('active');
+    if(progFill) progFill.style.width = percent + '%';
+    if(progText) progText.textContent = text;
+  };
+  
+  if(type === 'video'){
+    if(!result.videoUrl){
+      showToast('无视频链接', 'error');
+      return;
+    }
+    filename = generateFileName('Video', idx, result.author, result.title, 'mp4', isBatch);
+    url = result.videoUrl;
+    onProgress(0, '正在下载视频...');
+    await downloadFile(url, filename, onProgress, 'video');
+    onProgress(100, '视频下载完成');
+  } else if(type === 'photo'){
+    if(!result.coverUrl){
+      showToast('无封面链接', 'error');
+      return;
+    }
+    filename = generateFileName('Photo', idx, result.author, result.title, 'jpg', isBatch);
+    url = result.coverUrl;
+    onProgress(0, '正在下载封面...');
+    await downloadFile(url, filename, onProgress, 'photo');
+    onProgress(100, '封面下载完成');
+  } else if(type === 'txt'){
+    filename = generateFileName('Txt', idx, result.author, result.title, 'txt', isBatch);
+    content = formatTextContent(result);
+    onProgress(50, '正在保存文案...');
+    await downloadBlob(new Blob([content], {type:'text/plain;charset=utf-8'}), filename);
+    onProgress(100, '文案下载完成');
+  }
+  
+  // Hide progress bar after 2 seconds
+  setTimeout(function(){
+    if(progEl) progEl.classList.remove('active');
+  }, 2000);
+}
+
+async function downloadFile(url, filename, onProgress, mediaType){
+  onProgress = onProgress || function(){};
+  
+  // Helper: fetch blob with XMLHttpRequest for progress tracking
+  function fetchWithXHR(targetUrl, useNoReferrer){
+    return new Promise(function(resolve, reject){
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', targetUrl, true);
+      if(useNoReferrer) xhr.setRequestHeader('Referer', '');
+      xhr.responseType = 'blob';
+      
+      xhr.onprogress = function(e){
+        if(e.lengthComputable){
+          var percent = Math.round((e.loaded / e.total) * 100);
+          var loadedMB = (e.loaded / 1024 / 1024).toFixed(1);
+          var totalMB = (e.total / 1024 / 1024).toFixed(1);
+          onProgress(percent, '下载中... ' + percent + '% (' + loadedMB + '/' + totalMB + 'MB)');
+        } else {
+          onProgress(50, '下载中... (无法获取进度)');
+        }
+      };
+      
+      xhr.onload = function(){
+        if(xhr.status >= 200 && xhr.status < 300){
+          var blob = xhr.response;
+          if(blob && blob.size > 0){
+            resolve(blob);
+          } else {
+            reject(new Error('empty response'));
+          }
+        } else {
+          reject(new Error('HTTP ' + xhr.status));
+        }
+      };
+      
+      xhr.onerror = function(){ reject(new Error('network error')); };
+      xhr.ontimeout = function(){ reject(new Error('timeout')); };
+      xhr.timeout = 60000;
+      
+      xhr.send();
+    });
+  }
+  
+  onProgress(5, '正在连接...');
+  
+  // Strategy 1: Direct download with no-referrer (XMLHttpRequest for progress)
+  try{
+    var blob = await fetchWithXHR(url, true);
+    onProgress(90, '正在保存...');
+    await downloadBlob(blob, filename);
+    return;
+  } catch(e){
+    console.log('Direct download failed, trying proxies...', e.message);
+  }
+  
+  // Strategy 2: Try via CORS proxy
+  for(var i = 0; i < CORS_PROXIES.length; i++){
+    try{
+      onProgress(10 + Math.round(i * 60 / CORS_PROXIES.length), '尝试代理 ' + (i+1) + '...');
+      var proxyUrl = CORS_PROXIES[i](url);
+      var blob2 = await fetchWithXHR(proxyUrl, false);
+      onProgress(90, '正在保存...');
+      await downloadBlob(blob2, filename);
+      return;
+    } catch(e){
+      console.log('Proxy ' + i + ' failed:', e.message);
+    }
+  }
+  
+  // 所有抓取策略均失败（通常是平台 CDN 不带 CORS 头）。
+  // 移动端（尤其安卓）无法用 blob 直接保存跨域视频，
+  // 改为打开直链 + 复制链接，让用户在浏览器长按「保存视频」或用下载器 App 粘贴。
+  onProgress(0, '直接下载失败');
+  if(mediaType === 'video'){
+    await openVideoForSave(url, filename);
+  } else {
+    try{ if(navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(url); }catch(e){}
+    window.open(url, '_blank');
+    showToast('链接已复制并打开，请长按保存', 'success', 5000);
+  }
+}
+
+async function downloadBlob(blob, filename){
+  // pywebview 窗口内 a.click() 下载无效，改为通过后端保存到系统下载目录
+  try{
+    var formData = new FormData();
+    formData.append('file', blob, filename);
+    var resp = await fetch('/api/save-file', {method: 'POST', body: formData});
+    if(resp.ok){
+      var data = await resp.json();
+      if(data.ok){
+        showToast('已保存: ' + data.filename + '\n保存位置: ' + data.path, 'success', 6000);
+        addDownloadRecord(filename, blob.size || 0, data.path);
+        return;
+      }
+    }
+  } catch(e){
+    console.log('后端保存失败，回退到浏览器下载...', e);
+  }
+  // Fallback: 浏览器原生下载 (非 pywebview 环境有效)
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  showToast('已下载: ' + filename + '\n请到浏览器默认下载目录查看(通常是"下载"文件夹)', 'success', 5000);
+  addDownloadRecord(filename, blob.size || 0, null);
+}
+
+function isAndroid(){
+  return /Android/i.test(navigator.userAgent);
+}
+
+// 移动端（尤其安卓）无法用 blob 直接保存跨域视频，
+// 最可靠的做法：打开直链 + 复制链接，让用户在浏览器长按「保存视频」或用下载器 App 粘贴。
+async function openVideoForSave(url, filename){
+  // 1) 尽力用带 download 属性的 a 标签触发（部分环境可直接下载）
+  try{
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename || 'video.mp4';
+    a.setAttribute('referrerpolicy', 'no-referrer');
+    a.rel = 'noopener';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }catch(e){}
+  // 2) 复制直链，方便用下载器 App 粘贴
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+    }
+  }catch(e){}
+  // 3) 新标签打开，安卓 Chrome 可长按视频「保存视频」
+  window.open(url, '_blank');
+  if(isAndroid()){
+    showToast('已打开视频并复制链接：在浏览器中「长按视频 → 保存视频」，或把链接粘到下载器 App', 'success', 7000);
+  } else {
+    showToast('已打开视频并复制链接：请右键/长按视频保存', 'success', 6000);
+  }
+}
+
+function formatTextContent(result){
+  var lines = [];
+  lines.push('发布平台：' + getPlatformLabel(result.platform));
+  lines.push('博主名称：' + (result.author || '未知'));
+  lines.push('发布标题：' + (result.title || '无标题'));
+  if(result.tags && result.tags.length > 0){
+    lines.push('发布标签：' + result.tags.join(' '));
+  }
+  lines.push('原文链接：' + (result.originalUrl || ''));
+  lines.push('');
+  lines.push('--- 发布文案 ---');
+  lines.push(result.desc || '无文案');
+  return lines.join('\n');
+}
+
+// ==================== Batch Download Modal ====================
+var batchDownloadType = 'video';
+var batchDownloadMethod = 'direct';
+
+function showBatchDownloadModal(){
+  var successResults = parseResults.filter(function(r){ return r.status === 'success'; });
+  if(successResults.length === 0){
+    showToast('没有可下载的结果', 'error');
+    return;
+  }
+  
+  var videoCount = successResults.filter(function(r){ return r.videoUrl; }).length;
+  var coverCount = successResults.filter(function(r){ return r.coverUrl; }).length;
+  var txtCount = successResults.length;
+  
+  document.getElementById('batchModalStats').innerHTML = 
+    '共 ' + successResults.length + ' 条结果<br>视频 ' + videoCount + ' 个 | 封面 ' + coverCount + ' 个 | 文案 ' + txtCount + ' 个';
+  
+  batchDownloadType = 'video';
+  batchDownloadMethod = 'direct';
+  
+  var typeOpts = document.querySelectorAll('#batchModal .modal-option[data-type]');
+  for(var i = 0; i < typeOpts.length; i++){
+    typeOpts[i].classList.toggle('selected', typeOpts[i].getAttribute('data-type') === 'video');
+  }
+  var methodOpts = document.querySelectorAll('#batchModal .modal-option[data-method]');
+  for(var i = 0; i < methodOpts.length; i++){
+    methodOpts[i].classList.toggle('selected', methodOpts[i].getAttribute('data-method') === 'direct');
+  }
+  
+  document.getElementById('batchModalProgress').classList.remove('active');
+  document.getElementById('batchModalActions').style.display = 'flex';
+  document.getElementById('batchProgressFill').style.width = '0';
+  document.getElementById('batchStartIndex').value = '1';
+  
+  document.getElementById('batchModal').classList.add('active');
+}
+
+function closeBatchModal(){
+  document.getElementById('batchModal').classList.remove('active');
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){
+    var m = document.getElementById('batchModal');
+    if(m && m.classList.contains('active')) closeBatchModal();
+  }
+});
+
+function selectBatchType(type){
+  batchDownloadType = type;
+  var opts = document.querySelectorAll('#batchModal .modal-option[data-type]');
+  for(var i = 0; i < opts.length; i++){
+    opts[i].classList.toggle('selected', opts[i].getAttribute('data-type') === type);
+  }
+}
+
+function selectBatchMethod(method){
+  batchDownloadMethod = method;
+  var opts = document.querySelectorAll('#batchModal .modal-option[data-method]');
+  for(var i = 0; i < opts.length; i++){
+    opts[i].classList.toggle('selected', opts[i].getAttribute('data-method') === method);
+  }
+}
+
+async function confirmBatchDownload(){
+  var type = batchDownloadType;
+  var method = batchDownloadMethod;
+  
+  // Read custom start index
+  var startIndexInput = document.getElementById('batchStartIndex');
+  var startIndex = parseInt(startIndexInput.value, 10);
+  if(isNaN(startIndex) || startIndex < 1) startIndex = 1;
+  
+  var successResults = parseResults.filter(function(r){ return r.status === 'success'; });
+  var availableResults = [];
+  for(var i = 0; i < successResults.length; i++){
+    var r = successResults[i];
+    if(type === 'video' && !r.videoUrl) continue;
+    if(type === 'photo' && !r.coverUrl) continue;
+    availableResults.push(r);
+  }
+  
+  if(availableResults.length === 0){
+    var typeLabel = type === 'video' ? '视频' : type === 'photo' ? '封面' : '文案';
+    showToast('没有可下载的' + typeLabel, 'error');
+    return;
+  }
+  
+  var isBatch = true; // Batch download always uses index
+  var typeLabel2 = type === 'video' ? '视频' : type === 'photo' ? '封面' : '文案';
+  
+  document.getElementById('batchModalActions').style.display = 'none';
+  document.getElementById('batchModalProgress').classList.add('active');
+  
+  if(method === 'zip'){
+    await batchDownloadZip(availableResults, type, isBatch, startIndex);
+  } else {
+    await batchDownloadDirect(availableResults, type, isBatch, startIndex);
+  }
+  
+  document.getElementById('batchProgressFill').style.width = '100%';
+  document.getElementById('batchProgressText').textContent = '完成！';
+  
+  setTimeout(function(){
+    closeBatchModal();
+  }, 1200);
+}
+
+async function batchDownloadZip(results, type, isBatch, startIndex){
+  var files = [];
+  var progressFill = document.getElementById('batchProgressFill');
+  var progressText = document.getElementById('batchProgressText');
+  
+  for(var i = 0; i < results.length; i++){
+    var r = results[i];
+    var idx = r.index;
+    var customIdx = startIndex + i;
+    var progress = Math.round((i / results.length) * 90);
+    progressFill.style.width = progress + '%';
+    progressText.textContent = '下载资源 ' + (i+1) + '/' + results.length + '...';
+    
+    if(type === 'txt'){
+      var txtName = generateFileName('Txt', idx, r.author, r.title, 'txt', isBatch, customIdx);
+      var txtContent = formatTextContent(r);
+      files.push({name: txtName, data: new TextEncoder().encode(txtContent).buffer});
+    } else if(type === 'video'){
+      if(r.videoUrl){
+        var videoData = await fetchFileData(r.videoUrl);
+        if(videoData){
+          var videoName = generateFileName('Video', idx, r.author, r.title, 'mp4', isBatch, customIdx);
+          files.push({name: videoName, data: videoData});
+        }
+      }
+    } else if(type === 'photo'){
+      if(r.coverUrl){
+        var coverData = await fetchFileData(r.coverUrl);
+        if(coverData){
+          var ext = getCoverExt(r.coverUrl);
+          var coverName = generateFileName('Photo', idx, r.author, r.title, ext, isBatch, customIdx);
+          files.push({name: coverName, data: coverData});
+        }
+      }
+    }
+  }
+
+  if(files.length === 0){
+    showToast('没有可打包的文件：视频/封面多为跨域限制，无法抓取，请改用「逐个下载」', 'error', 6000);
+    return;
+  }
+  
+  progressText.textContent = '生成ZIP...';
+  
+  try{
+    var zipBlob = createZip(files);
+    var typeLabel = type === 'video' ? 'video' : type === 'photo' ? 'photo' : 'txt';
+    downloadBlob(zipBlob, 'batch_' + typeLabel + '_' + Date.now() + '.zip');
+  } catch(e){
+    console.error('ZIP error:', e);
+    showToast('ZIP打包失败: ' + e.message, 'error');
+  }
+}
+
+async function batchDownloadDirect(results, type, isBatch, startIndex){
+  var progressFill = document.getElementById('batchProgressFill');
+  var progressText = document.getElementById('batchProgressText');
+  var typeLabel = type === 'video' ? '视频' : type === 'photo' ? '封面' : '文案';
+  var successCount = 0;
+  
+  for(var i = 0; i < results.length; i++){
+    var r = results[i];
+    var idx = r.index;
+    var customIdx = startIndex + i;
+    var progress = Math.round((i / results.length) * 95);
+    progressFill.style.width = progress + '%';
+    progressText.textContent = '下载' + typeLabel + ' ' + (i+1) + '/' + results.length + '...';
+    
+    if(type === 'txt'){
+      var txtName = generateFileName('Txt', idx, r.author, r.title, 'txt', isBatch, customIdx);
+      var txtContent = formatTextContent(r);
+      downloadBlob(new Blob([txtContent], {type:'text/plain;charset=utf-8'}), txtName);
+      successCount++;
+    } else if(type === 'video'){
+      if(r.videoUrl){
+        var videoName = generateFileName('Video', idx, r.author, r.title, 'mp4', isBatch, customIdx);
+        await downloadFile(r.videoUrl, videoName);
+        successCount++;
+      }
+    } else if(type === 'photo'){
+      if(r.coverUrl){
+        var ext = getCoverExt(r.coverUrl);
+        var coverName = generateFileName('Photo', idx, r.author, r.title, ext, isBatch, customIdx);
+        await downloadFile(r.coverUrl, coverName);
+        successCount++;
+      }
+    }
+    
+    if(i < results.length - 1){
+      await new Promise(function(resolve){ setTimeout(resolve, 600); });
+    }
+  }
+  
+  showToast('批量下载完成，共下载 ' + successCount + ' 个' + typeLabel, 'success');
+}
+
+function getCoverExt(url){
+  var ext = 'jpg';
+  if(url.indexOf('.png') >= 0) ext = 'png';
+  if(url.indexOf('.webp') >= 0) ext = 'webp';
+  return ext;
+}
+
+async function fetchFileData(url){
+  try{
+    var resp = await fetchWithTimeout(url, {method:'GET', referrerPolicy:'no-referrer'}, 30000);
+    if(resp.ok){
+      var buf = await resp.arrayBuffer();
+      if(buf.byteLength > 0) return buf;
+    }
+  } catch(e){}
+  
+  for(var i = 0; i < CORS_PROXIES.length; i++){
+    try{
+      var resp = await fetchWithTimeout(CORS_PROXIES[i](url), {method:'GET'}, 30000);
+      if(resp.ok){
+        var buf = await resp.arrayBuffer();
+        if(buf.byteLength > 0) return buf;
+      }
+    } catch(e){}
+  }
+  
+  return null;
+}
+
+// ==================== ZIP Implementation ====================
+function makeCrc32Table(){
+  var table = new Uint32Array(256);
+  for(var n = 0; n < 256; n++){
+    var c = n;
+    for(var k = 0; k < 8; k++){
+      if(c & 1) c = 0xEDB88320 ^ (c >>> 1);
+      else c = c >>> 1;
+    }
+    table[n] = c;
+  }
+  return table;
+}
+
+var CRC32_TABLE = null;
+function crc32(data){
+  if(!CRC32_TABLE) CRC32_TABLE = makeCrc32Table();
+  var crc = 0xFFFFFFFF;
+  for(var i = 0; i < data.length; i++){
+    crc = CRC32_TABLE[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
+  }
+  return (crc ^ 0xFFFFFFFF) >>> 0;
+}
+
+function createZip(files){
+  var enc = new TextEncoder();
+  var localParts = [];
+  var centralParts = [];
+  var offset = 0;
+  
+  for(var i = 0; i < files.length; i++){
+    var nameBytes = enc.encode(files[i].name);
+    var data = files[i].data;
+    var dataBytes = new Uint8Array(data);
+    var crc = crc32(dataBytes);
+    var compressedSize = dataBytes.length;
+    var uncompressedSize = dataBytes.length;
+    
+    // Local file header
+    var localHeader = new Uint8Array(30 + nameBytes.length);
+    var lv = new DataView(localHeader.buffer);
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0, true);
+    lv.setUint16(8, 0, true);
+    lv.setUint16(10, 0, true);
+    lv.setUint16(12, 0, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, compressedSize, true);
+    lv.setUint32(22, uncompressedSize, true);
+    lv.setUint16(26, nameBytes.length, true);
+    lv.setUint16(28, 0, true);
+    localHeader.set(nameBytes, 30);
+    
+    localParts.push(localHeader);
+    localParts.push(dataBytes);
+    
+    // Central directory header
+    var centralHeader = new Uint8Array(46 + nameBytes.length);
+    var cv = new DataView(centralHeader.buffer);
+    cv.setUint32(0, 0x02014b50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, 0, true);
+    cv.setUint16(14, 0, true);
+    cv.setUint32(16, crc, true);
+    cv.setUint32(20, compressedSize, true);
+    cv.setUint32(24, uncompressedSize, true);
+    cv.setUint16(28, nameBytes.length, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
+    cv.setUint32(38, 0, true);
+    cv.setUint32(42, offset, true);
+    centralHeader.set(nameBytes, 46);
+    
+    centralParts.push(centralHeader);
+    
+    offset += localHeader.length + dataBytes.length;
+  }
+  
+  // End of central directory
+  var centralSize = 0;
+  for(var i = 0; i < centralParts.length; i++){
+    centralSize += centralParts[i].length;
+  }
+  
+  var endHeader = new Uint8Array(22);
+  var ev = new DataView(endHeader.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(4, 0, true);
+  ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true);
+  ev.setUint16(10, files.length, true);
+  ev.setUint32(12, centralSize, true);
+  ev.setUint32(16, offset, true);
+  ev.setUint16(20, 0, true);
+  
+  // Combine all parts
+  var totalSize = 0;
+  for(var i = 0; i < localParts.length; i++) totalSize += localParts[i].length;
+  for(var i = 0; i < centralParts.length; i++) totalSize += centralParts[i].length;
+  totalSize += endHeader.length;
+  
+  var zip = new Uint8Array(totalSize);
+  var pos = 0;
+  for(var i = 0; i < localParts.length; i++){
+    zip.set(localParts[i], pos);
+    pos += localParts[i].length;
+  }
+  for(var i = 0; i < centralParts.length; i++){
+    zip.set(centralParts[i], pos);
+    pos += centralParts[i].length;
+  }
+  zip.set(endHeader, pos);
+  
+  return new Blob([zip], {type: 'application/zip'});
+}
+
+// ==================== UI Functions ====================
+function updateCharCount(){
+  var text = document.getElementById('links').value.trim();
+  var count = text ? text.split(/\n/).filter(function(l){ return l.trim().length > 0; }).length : 0;
+  document.getElementById('charCount').textContent = count + ' 条链接';
+}
+
+async function pasteFromClipboard(){
+  var textarea = document.getElementById('links');
+  if(!textarea) return;
+
+  // 先聚焦输入框：PWA 独立窗口下 document 可能未聚焦，readText 会报 "Document is not focused" 而失败
+  try{ textarea.focus(); }catch(e){}
+  await new Promise(function(r){ setTimeout(r, 50); });
+
+  var hasClipboardAPI = !!(navigator.clipboard && typeof navigator.clipboard.readText === 'function');
+  var isIOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+
+  // Method 1: 标准 Clipboard API（安卓 Chrome / 桌面有效；iOS 不支持读取）
+  if(hasClipboardAPI){
+    try{
+      var text = await navigator.clipboard.readText();
+      if(text && text.trim()){
+        insertClipboardText(textarea, text.trim());
+        showToast('已粘贴', 'success');
+        return;
+      }
+      showToast('剪贴板为空', 'error');
+      return;
+    } catch(e){
+      console.warn('Clipboard API read failed:', e && e.message);
+      if(e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')){
+        // 权限被拒：查询状态并给出可操作提示
+        try{
+          if(navigator.permissions && navigator.permissions.query){
+            var st = await navigator.permissions.query({name:'clipboard-read'});
+            if(st.state === 'denied'){
+              showToast('剪贴板权限被拒绝：请到浏览器站点设置→权限→剪贴板改为「允许」后重试', 'error', 6000);
+              return;
+            }
+          }
+        }catch(e2){}
+        showToast('剪贴板读取被拒绝，请允许权限后重试', 'error', 5000);
+        return;
+      }
+    }
+  }
+
+  // Method 2: 安卓旧版 execCommand 兜底
+  try{
+    textarea.focus();
+    if(document.execCommand){
+      var ok = document.execCommand('paste');
+      if(ok){
+        await new Promise(function(r){ setTimeout(r, 120); });
+        if(textarea.value.trim()){ updateCharCount(); showToast('已粘贴', 'success'); return; }
+      }
+    }
+  }catch(e2){}
+
+  // Method 3: 末路 —— 聚焦并定位光标到末尾，引导用户点输入框触发原生粘贴
+  try{ textarea.focus(); textarea.setSelectionRange(textarea.value.length, textarea.value.length); }catch(e3){}
+  if(isIOS){
+    showToast('苹果系统限制网页读剪贴板，已帮你聚焦输入框：请点一下输入框→在菜单选「粘贴」', 'info', 6000);
+  } else {
+    showToast('已聚焦输入框，请点一下输入框，在弹出菜单选「粘贴」', 'info', 5000);
+  }
+}
+
+function insertClipboardText(textarea, text){
+  if(textarea.value.trim()){
+    textarea.value += '\n' + text;
+  } else {
+    textarea.value = text;
+  }
+  updateCharCount();
+}
+
+function clearInput(){
+  document.getElementById('links').value = '';
+  updateCharCount();
+  document.getElementById('resultsSection').style.display = 'none';
+  parseResults = [];
+  audioBlobs = {};
+  currentMode = 'batch';
+  document.getElementById('parseBtnText').innerHTML = '批量解析';
+  document.getElementById('transcriptBtnText').innerHTML = '逐字稿解析';
+  // Expand tutorial and FAQ when clearing
+  var tutorial = document.getElementById('tutorialSection');
+  var faq = document.getElementById('faqSection');
+  if(tutorial) tutorial.classList.remove('collapsed');
+  if(faq) faq.classList.remove('collapsed');
+  showToast('已清除', 'success');
+}
+
+function toggleFaq(el){
+  el.classList.toggle('open');
+}
+
+// ==================== Download History & View Switching ====================
+var downloadHistory = [];
+var currentMenuIndex = -1;
+var currentDlViewItem = null;
+
+function loadDownloadHistory(){
+  try{
+    var raw = localStorage.getItem('vp_download_history');
+    if(raw) downloadHistory = JSON.parse(raw);
+  }catch(e){ downloadHistory = []; }
+}
+
+function saveDownloadHistory(){
+  try{ localStorage.setItem('vp_download_history', JSON.stringify(downloadHistory.slice(-200))); }catch(e){}
+}
+
+function addDownloadRecord(filename, size, path){
+  var record = {
+    id: Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    filename: filename,
+    size: size || 0,
+    path: path || null,
+    date: new Date().toISOString()
+  };
+  downloadHistory.unshift(record);
+  if(downloadHistory.length > 200) downloadHistory.pop();
+  saveDownloadHistory();
+}
+
+function formatFileSize(bytes){
+  if(bytes === 0) return '0 B';
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function formatDlDate(iso){
+  var d = new Date(iso);
+  var y = d.getFullYear();
+  var m = d.getMonth() + 1;
+  var day = d.getDate();
+  var h = String(d.getHours()).padStart(2, '0');
+  var min = String(d.getMinutes()).padStart(2, '0');
+  return y + '/' + m + '/' + day + ' ' + h + ':' + min;
+}
+
+function getDlIconSvg(type){
+  if(type === 'video' || type === 'Video'){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+  }
+  if(type === 'photo' || type === 'Photo' || type === 'jpg' || type === 'png' || type === 'webp'){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+  }
+  if(type === 'zip'){
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
+  }
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+}
+
+function detectDlType(filename){
+  var lower = filename.toLowerCase();
+  if(lower.indexOf('video') >= 0 || lower.endsWith('.mp4')) return 'video';
+  if(lower.indexOf('photo') >= 0 || lower.endsWith('.jpg') || lower.endsWith('.png') || lower.endsWith('.webp')) return 'photo';
+  if(lower.endsWith('.zip')) return 'zip';
+  return 'txt';
+}
+
+function renderDownloadList(){
+  var container = document.getElementById('downloadListContainer');
+  var empty = document.getElementById('downloadListEmpty');
+  if(!container) return;
+  if(downloadHistory.length === 0){
+    container.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  var html = '';
+  for(var i = 0; i < downloadHistory.length; i++){
+    var item = downloadHistory[i];
+    var type = detectDlType(item.filename);
+    html += '<div class="dl-item">' +
+      '<div class="dl-item-thumb">' + getDlIconSvg(type) + '</div>' +
+      '<div class="dl-item-info">' +
+        '<div class="dl-item-name">' + escapeHtml(item.filename) + '</div>' +
+        '<div class="dl-item-meta">' + formatDlDate(item.date) + (item.size ? ' &middot; ' + formatFileSize(item.size) : '') + '</div>' +
+      '</div>' +
+      '<button class="dl-item-menu" onclick="showDlMenu(' + i + ', event)" title="更多">&#8942;</button>' +
+    '</div>';
+  }
+  container.innerHTML = html;
+}
+
+function switchView(view){
+  var mainEl = document.querySelector('.main');
+  var dlView = document.getElementById('downloadListView');
+  var footerEl = document.querySelector('.footer');
+  var navItems = document.querySelectorAll('.bottom-nav-item');
+  if(view === 'downloads'){
+    if(mainEl) mainEl.style.display = 'none';
+    if(footerEl) footerEl.style.display = 'none';
+    if(dlView) dlView.classList.add('active');
+    renderDownloadList();
+  } else {
+    if(mainEl) mainEl.style.display = '';
+    if(footerEl) footerEl.style.display = '';
+    if(dlView) dlView.classList.remove('active');
+  }
+  navItems.forEach(function(el, i){
+    el.classList.toggle('active', (view === 'parse' && i === 0) || (view === 'downloads' && i === 1));
+  });
+}
+
+function showDlMenu(index, event){
+  currentMenuIndex = index;
+  var popup = document.getElementById('dlMenuPopup');
+  if(!popup) return;
+  var rect = event.currentTarget.getBoundingClientRect();
+  popup.style.top = (rect.top - 4) + 'px';
+  popup.style.right = '16px';
+  popup.classList.add('active');
+  event.stopPropagation();
+}
+
+function openDownloadFile(){
+  var record = downloadHistory[currentMenuIndex];
+  if(!record) return;
+  // Try to open blob URL if cached, otherwise toast
+  showToast('请在浏览器下载目录中打开: ' + record.filename, 'info', 4000);
+  document.getElementById('dlMenuPopup').classList.remove('active');
+}
+
+function showFileLocation(){
+  var record = downloadHistory[currentMenuIndex];
+  if(!record) return;
+  if(record.path){
+    showToast('文件位置: ' + record.path, 'info', 5000);
+  } else {
+    showToast('文件已保存到浏览器默认下载目录（通常是"下载"文件夹）', 'info', 5000);
+  }
+  document.getElementById('dlMenuPopup').classList.remove('active');
+}
+
+document.addEventListener('click', function(e){
+  var popup = document.getElementById('dlMenuPopup');
+  if(popup && !popup.contains(e.target) && !e.target.closest('.dl-item-menu')){
+    popup.classList.remove('active');
+  }
+});
+
+// ==================== Init ====================
+document.getElementById('links').addEventListener('input', updateCharCount);
+document.getElementById('links').addEventListener('keydown', function(e){
+  if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+    e.preventDefault();
+    if(currentMode === 'transcript'){
+      batchTranscript();
+    } else {
+      batchParse();
+    }
+  }
+});
+
+// V11: Check local transcription server on page load
+checkServerStatus();
+// Periodically recheck server status every 30 seconds
+setInterval(function(){ checkServerStatus(); }, 30000);
+// Load download history
+loadDownloadHistory();
+</script>
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').catch(function(err) { console.warn('SW register failed:', err); });
+  });
+}
+</script>
+</body>
+</html>
