@@ -148,13 +148,17 @@ textarea#links::placeholder{color:#B9BCC1}
 .result-card:hover{box-shadow:var(--shadow-md)}
 .result-card.parsing{opacity:.85}
 .result-card.error{box-shadow:0 6px 20px rgba(255,59,48,.08)}
-/* V28 横向卡片：左封面(固定宽,16:9) + 右内容，两列等高，红框内容同容器 */
+/* V28.1 横向卡片：左列(封面 + 正下方按钮行) + 右列内容，两列等高 */
 @media (min-width:641px){
-  .result-card{flex-direction:row;align-items:stretch;min-height:230px}
-  .result-card>.card-media{width:246px;flex:0 0 246px;aspect-ratio:auto;height:auto;min-height:100%}
+  .result-card{flex-direction:row;align-items:stretch;min-height:0}
+  /* 左列：封面 + 其下方按钮行 */
+  .result-card>.card-left{width:190px;flex:0 0 190px;display:flex;flex-direction:column;min-width:0}
+  .result-card>.card-left>.card-media{width:100%;aspect-ratio:16/9;flex:0 0 auto;border-radius:0}
+  .result-card>.card-left>.download-row{margin-top:auto;padding:10px 12px 12px;border-top:none;flex-wrap:wrap;gap:6px}
+  /* 右列：标题/作者/文案/标签 */
   .result-card>.card-content{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-start}
-  /* 单列模式下封面略宽，视觉更平衡 */
-  #resultsList.single-col .result-card>.card-media{width:300px;flex:0 0 300px}
+  /* 单列模式下封面上限放宽，视觉更平衡 */
+  #resultsList.single-col .result-card>.card-left{width:240px;flex:0 0 240px}
 }
 .card-media{position:relative;aspect-ratio:16/9;background:linear-gradient(140deg,#31AF74,#57B87E);flex-shrink:0}
 .card-media.has-error{background:linear-gradient(140deg,#6B7280,#9CA3AF)}
@@ -193,9 +197,8 @@ textarea#links::placeholder{color:#B9BCC1}
 .tag-more{background:rgba(118,118,128,.10);color:var(--text-muted);font-weight:700}
 
 .download-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:12px;border-top:.5px solid var(--hair);margin-top:auto}
-/* V28 双列等高：按钮行固定贴底，内容区不被拉伸，卡片高度由栅格统一 */
+/* V28.1 按钮行位于左列封面下方，无需顶部横线；内容区不被拉伸，卡片高度由栅格统一 */
 @media (min-width:641px){
-  .card-content>.download-row{margin-top:auto}
   .card-body{flex:0 0 auto}
 }
 .dl-btn{font-size:12.5px;padding:8px 15px;border-radius:99px;border:none;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
@@ -277,9 +280,11 @@ textarea#links::placeholder{color:#B9BCC1}
 .step{padding:12px}
 .btn-group{flex-direction:column}
 .btn{width:100%;justify-content:center}
-/* 窄屏回退为纵向卡片：封面在上，内容在下 */
+/* 窄屏回退为纵向卡片：封面在上，按钮行在封面下方，内容在最后 */
 .result-card{flex-direction:column;min-height:0}
-.result-card>.card-media{width:100%;flex:0 0 auto;aspect-ratio:16/9;min-height:0}
+.result-card>.card-left{width:100%;flex:0 0 auto;display:flex;flex-direction:column}
+.result-card>.card-left>.card-media{width:100%;aspect-ratio:16/9}
+.result-card>.card-left>.download-row{padding:12px 18px 0;border-top:none;margin-top:0}
 .menu-btn{display:block}
 .header-actions .lang-badge{display:none}
 }
@@ -1818,8 +1823,11 @@ async function batchTranscript(){
     var platform = detectPlatform(links[i].url);
     var platformLabel = getPlatformLabel(platform);
     var cardHtml = '<div class="result-card parsing transcript-mode" id="' + cardId + '">' +
+      '<div class="card-left">' +
       '<div class="card-media transcribing"><span class="card-index">' + (i + 1) + '</span>' +
         '<div class="preview-thumb"><div class="cover-loading">解析中...</div></div></div>' +
+      '<div class="download-row"><span style="font-size:12.5px;color:var(--text-muted)">解析中...</span></div>' +
+      '</div>' +
       '<div class="card-content">' +
         '<div class="result-title-row"><div class="result-title">解析中...</div>' +
         '<span class="result-status status-parsing"><span class="spinner"></span> 解析中</span></div>' +
@@ -1950,8 +1958,11 @@ async function batchParse(){
     var platform = detectPlatform(links[i].url);
     var platformLabel = getPlatformLabel(platform);
     var cardHtml = '<div class="result-card parsing" id="' + cardId + '">' +
+      '<div class="card-left">' +
       '<div class="card-media"><span class="card-index">' + (i + 1) + '</span>' +
         '<div class="preview-thumb"><div class="cover-loading">解析中...</div></div></div>' +
+      '<div class="download-row"><span style="font-size:12.5px;color:var(--text-muted)">解析中...</span></div>' +
+      '</div>' +
       '<div class="card-content">' +
         '<div class="result-title-row"><div class="result-title">解析中...</div>' +
         '<span class="result-status status-parsing"><span class="spinner"></span> 解析中</span></div>' +
@@ -2154,10 +2165,13 @@ function renderResultCard(result, cardId){
   }
 
   card.innerHTML =
+  '<div class="card-left">' +
   '<div class="card-media' + (result.status === 'error' ? ' has-error' : '') + (isTranscriptMode ? ' transcribing' : '') + '">' +
     '<span class="card-chip">' + escapeHtml(srcChip) + '</span>' +
     '<span class="card-index">' + idx + '</span>' +
     coverHtml +
+  '</div>' +
+  '<div class="download-row">' + downloadHtml + '</div>' +
   '</div>' +
   '<div class="card-content">' +
     '<div class="card-body">' +
@@ -2175,7 +2189,6 @@ function renderResultCard(result, cardId){
     '</div>' +
     errorHtml +
     redirectHtml +
-    '<div class="download-row">' + downloadHtml + '</div>' +
     '<div class="download-progress" id="downloadProgress-' + idx + '">' +
       '<div class="download-progress-track"><div class="download-progress-fill" id="downloadProgressFill-' + idx + '"></div></div>' +
       '<div class="download-progress-text" id="downloadProgressText-' + idx + '"></div>' +
