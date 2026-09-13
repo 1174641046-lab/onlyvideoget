@@ -94,8 +94,10 @@ textarea#links::placeholder{color:#B9BCC1}
 
 /* Results */
 .results-section{margin-top:30px}
-#resultsList{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#resultsList{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
 #resultsList.single-col{grid-template-columns:1fr}
+/* 栅格子项等高：同一行两张卡片高度完全一致（V28） */
+#resultsList>.result-card{height:100%}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:12px}
 .results-header h2{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .results-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -147,6 +149,14 @@ textarea#links::placeholder{color:#B9BCC1}
 .result-card:hover{box-shadow:var(--shadow-md)}
 .result-card.parsing{opacity:.85}
 .result-card.error{box-shadow:0 6px 20px rgba(255,59,48,.08)}
+/* V28 横向卡片：左封面(固定宽,16:9) + 右内容，两列等高，红框内容同容器 */
+@media (min-width:641px){
+  .result-card{flex-direction:row;align-items:stretch;min-height:230px}
+  .result-card>.card-media{width:246px;flex:0 0 246px;aspect-ratio:auto;height:auto;min-height:100%}
+  .result-card>.card-content{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-start}
+  /* 单列模式下封面略宽，视觉更平衡 */
+  #resultsList.single-col .result-card>.card-media{width:300px;flex:0 0 300px}
+}
 .card-media{position:relative;aspect-ratio:16/9;background:linear-gradient(140deg,#31AF74,#57B87E);flex-shrink:0}
 .card-media.has-error{background:linear-gradient(140deg,#6B7280,#9CA3AF)}
 .card-media.transcribing{background:linear-gradient(140deg,#0A6CFF,#5AA9FF)}
@@ -163,7 +173,13 @@ textarea#links::placeholder{color:#B9BCC1}
 .preview-thumb .cover-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.10);color:#fff;font-size:12px;z-index:1}
 .card-chip{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.88);backdrop-filter:blur(6px);color:var(--blue-deep);font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;z-index:2}
 .card-index{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;z-index:2}
-.card-content{padding:16px 18px 15px;flex:1;display:flex;flex-direction:column}
+.card-content{padding:16px 18px 15px;flex:1;display:flex;flex-direction:column;min-width:0}
+/* 卡片内容整体包裹容器：标题/作者/文案/标签同处一框（V28） */
+.card-body{display:flex;flex-direction:column;gap:0;min-width:0}
+.card-body .result-title-row{margin-bottom:2px}
+.card-body .result-author{margin:6px 0 9px}
+.card-body .result-desc{margin-bottom:9px}
+.card-body .result-tags{margin-bottom:0}
 .result-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .result-title{font-size:15.5px;font-weight:700;line-height:1.45;letter-spacing:-.2px;word-break:break-word;flex:1}
 .result-status{font-size:11px;padding:4px 10px;border-radius:99px;font-weight:700;flex-shrink:0;white-space:nowrap}
@@ -178,6 +194,11 @@ textarea#links::placeholder{color:#B9BCC1}
 .tag-more{background:rgba(118,118,128,.10);color:var(--text-muted);font-weight:700}
 
 .download-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:12px;border-top:.5px solid var(--hair);margin-top:auto}
+/* V28 双列等高：按钮行固定贴底，内容区不被拉伸，卡片高度由栅格统一 */
+@media (min-width:641px){
+  .card-content>.download-row{margin-top:auto}
+  .card-body{flex:0 0 auto}
+}
 .dl-btn{font-size:12.5px;padding:8px 15px;border-radius:99px;border:none;cursor:pointer;font-weight:600;transition:all .18s;display:inline-flex;align-items:center;gap:4px;font-family:inherit}
 .dl-video{background:var(--green-tint);color:var(--green-deep)}
 .dl-video:hover{background:#D5EBE0}
@@ -242,7 +263,7 @@ textarea#links::placeholder{color:#B9BCC1}
 
 /* Responsive */
 @media(max-width:860px){
-#resultsList{grid-template-columns:1fr 1fr}
+#resultsList{grid-template-columns:1fr 1fr;align-items:stretch}
 #resultsList.single-col{grid-template-columns:1fr}
 }
 @media(max-width:560px){
@@ -257,7 +278,9 @@ textarea#links::placeholder{color:#B9BCC1}
 .step{padding:12px}
 .btn-group{flex-direction:column}
 .btn{width:100%;justify-content:center}
-.result-card{padding:0}
+/* 窄屏回退为纵向卡片：封面在上，内容在下 */
+.result-card{flex-direction:column;min-height:0}
+.result-card>.card-media{width:100%;flex:0 0 auto;aspect-ratio:16/9;min-height:0}
 .menu-btn{display:block}
 .header-actions .lang-badge{display:none}
 }
@@ -2138,6 +2161,7 @@ function renderResultCard(result, cardId){
     coverHtml +
   '</div>' +
   '<div class="card-content">' +
+    '<div class="card-body">' +
     '<div class="result-title-row">' +
       '<div class="result-title">' + escapeHtml(titleDisplay) + '</div>' +
       '<span class="result-status ' + statusClass + '">' + statusText + '</span>' +
@@ -2149,6 +2173,7 @@ function renderResultCard(result, cardId){
     '</div>' +
     descHtml +
     tagsHtml +
+    '</div>' +
     errorHtml +
     redirectHtml +
     '<div class="download-row">' + downloadHtml + '</div>' +
